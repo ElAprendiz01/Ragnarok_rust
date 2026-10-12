@@ -58,6 +58,7 @@ impl ChromeDriver {
         // Desacoplar salida para no bloquear el proceso
         cmd.stdout(std::process::Stdio::null());
         cmd.stderr(std::process::Stdio::null());
+        cmd.kill_on_drop(true);
 
         let child = cmd.spawn().context("Error al iniciar proceso de Chromium")?;
 

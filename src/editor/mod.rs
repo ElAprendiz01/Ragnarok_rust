@@ -137,6 +137,7 @@ impl EditorVideo {
         }
 
         let mut cmd = tokio::process::Command::new(&self.bin_ffmpeg);
+        cmd.kill_on_drop(true);
         cmd.arg("-y")
             .arg("-ss")
             .arg(format!("{:.3}", segmento.inicio_seg))

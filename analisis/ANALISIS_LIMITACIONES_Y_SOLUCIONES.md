@@ -554,3 +554,21 @@ Tras una verificación exhaustiva entre la interfaz de usuario HTML/JS y los con
 6. **Compilación y Límites de Código:**
    - `cargo check`: **0 errores, 0 warnings**.
    - Los 32 archivos `.rs` del proyecto se mantienen estrictamente por debajo de los **300 renglones** (el archivo más extenso tiene 259 líneas).
+
+---
+
+## 14. OPTIMIZACIONES AVANZADAS DE HARDWARE, RENTABILIDAD Y PROTOCOLO DE ITERACIÓN CONTINUA
+
+### ⚡ Mejoras de Ciclo de Vida y Concurrencia Implementadas
+1. **Protección Anti-Zombies con `kill_on_drop(true)`:**
+   - Se configuró `.kill_on_drop(true)` en todas las invocaciones asíncronas de subprocesos externos:
+     - `yt-dlp` en [`src/downloader/mod.rs`](file:///c:/rust/rust_Ragnarok/src/downloader/mod.rs)
+     - `ffmpeg` en [`src/editor/mod.rs`](file:///c:/rust/rust_Ragnarok/src/editor/mod.rs)
+     - `Chromium CDP` en [`src/crawler/chrome_driver.rs`](file:///c:/rust/rust_Ragnarok/src/crawler/chrome_driver.rs)
+   - Esto garantiza que si una tarea o conexión se cancela, se agota por timeout o la instancia cae, los subprocesos en Windows se eliminan inmediatamente sin dejar procesos zombis consumiendo CPU o bloqueando descriptores de archivos.
+2. **I/O Asíncrono Puro en Recorte de Videos:**
+   - En [`src/api/videos.rs`](file:///c:/rust/rust_Ragnarok/src/api/videos.rs#L115), se sustituyó el recorrido síncrono `std::fs::read_dir` por el streamer asíncrono no bloqueante `tokio::fs::read_dir`.
+3. **Validación Defensiva de Contrato en Publicación:**
+   - En [`src/api/publicacion.rs`](file:///c:/rust/rust_Ragnarok/src/api/publicacion.rs#L25), `id_video` se normalizó a `Option<String>` con validación explícita, evitando respuestas HTTP 422 y respondiendo con JSON estructurado `{ "ok": false, "error": "..." }`.
+4. **Plan de Iteración y Matriz de Contratos:**
+   - Se formalizó el documento [`analisis/PLAN_ITERATIVO_OPTIMIZACION_Y_VERIFICACION.md`](file:///c:/rust/rust_Ragnarok/analisis/PLAN_ITERATIVO_OPTIMIZACION_Y_VERIFICACION.md) que contiene la matriz completa de conectividad de los 25 endpoints del sistema y el ciclo iterativo de 5 pasos para futuras expansiones.

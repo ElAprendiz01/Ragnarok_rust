@@ -112,8 +112,8 @@ pub async fn recortar_video(
         Ok(total_clips) => {
             let dir_clips = dir_procesados.join(&id_video);
             let mut clips = Vec::new();
-            if let Ok(archivos) = std::fs::read_dir(&dir_clips) {
-                for a in archivos.flatten() {
+            if let Ok(mut archivos) = tokio::fs::read_dir(&dir_clips).await {
+                while let Ok(Some(a)) = archivos.next_entry().await {
                     let p = a.path();
                     if p.is_file() && p.extension().map_or(false, |ext| ext == "mp4") {
                         if let Some(nombre) = p.file_name() {

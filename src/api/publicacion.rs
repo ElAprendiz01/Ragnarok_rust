@@ -23,7 +23,7 @@ pub struct PublicarLotePayload {
 #[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 pub struct PublicarIndividualPayload {
-    pub id_video: String,
+    pub id_video: Option<String>,
     pub plataforma: Option<String>,
     pub canal: Option<String>,
     pub modo: Option<String>,
@@ -163,7 +163,15 @@ pub async fn publicar_individual(
     }
 
     let plataforma = payload.plataforma.unwrap_or_else(|| "telegram".to_string()).to_lowercase();
-    let id_video = payload.id_video;
+    let id_video = match payload.id_video.filter(|s| !s.trim().is_empty()) {
+        Some(id) => id,
+        None => {
+            return Json(json!({
+                "ok": false,
+                "error": "Debes especificar el parámetro 'id_video' para la publicación individual."
+            }));
+        }
+    };
     let modo = payload.modo.unwrap_or_else(|| "completo".to_string());
 
     if plataforma != "telegram" {

@@ -66,6 +66,7 @@ impl GestorDescargas {
 
             let plantilla = dir_video.join("video_original.%(ext)s");
             let mut cmd = tokio::process::Command::new("yt-dlp");
+            cmd.kill_on_drop(true);
 
             cmd.arg("-f")
                 .arg("bestvideo[vcodec^=avc1]+bestaudio[acodec^=mp4a]/best[ext=mp4]/best")
