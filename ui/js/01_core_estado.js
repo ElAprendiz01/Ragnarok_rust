@@ -333,3 +333,13 @@ function mostrarToast(tipo, msg) {
     info: '<img src="iconos/pipeline.svg" class="icono-svg-sm" />'
   };
   const el = document.createElement('div');
+  el.className = `toast ${tipo}`;
+  el.innerHTML = `<span>${ic[tipo] || '<img src="iconos/pipeline.svg" class="icono-svg-sm" />'}</span><span>${msg}</span>`;
+  tc.appendChild(el);
+  setTimeout(() => {
+    el.style.opacity = '0';
+    el.style.transform = 'translateX(20px)';
+    el.style.transition = 'all .3s';
+    setTimeout(() => el.remove(), 300);
+  }, 3500);
+}

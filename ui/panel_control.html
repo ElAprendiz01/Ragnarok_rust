@@ -41,6 +41,7 @@
     <button class="bico" title="Refrescar" onclick="refrescar()"><img src="iconos/refrescar.svg" class="icono-svg" alt="Refrescar" /></button>
     <button class="bico" title="Estudio de Reproducción" onclick="navTo('estudio',document.getElementById('nav-estudio'))"><img src="iconos/estudio.svg" class="icono-svg" alt="Estudio" /></button>
     <button class="bico" title="Logs" onclick="navTo('dash',document.getElementById('nav-dash'))"><img src="iconos/logs.svg" class="icono-svg" alt="Logs" /></button>
+  </header>
 
   <!-- ══════════════ MAIN CONTENT (VISTAS) ══════════════ -->
   <main class="main" id="main-content">
@@ -232,7 +233,7 @@
                 <tbody id="tb-tareas">
                   <tr id="sched-empty-row">
                     <td colspan="4" class="td-empty" style="padding:14px;text-align:center">
-                      <span style="color:var(--amber);font-weight:600">⏳ Módulo Scheduler en espera de demonio cron nativo en Rust</span><br>
+                      <span style="color:var(--amber);font-weight:600">[Módulo Scheduler en espera de demonio cron nativo en Rust]</span><br>
                       <span style="font-size:11px;color:var(--txt3)">Las tareas programadas se integrarán al servicio asíncrono de Tokio en la próxima versión.</span>
                     </td>
                   </tr>
@@ -593,7 +594,7 @@
     <div class="pip-drag-actions">
       <button class="pip-act-btn" onclick="pipMinimize()" title="Minimizar">—</button>
       <button class="pip-act-btn" onclick="pipExpand()" title="Expandir"><img src="iconos/pantalla.svg" class="icono-svg-sm" /></button>
-      <button class="pip-act-btn" onclick="cerrarPiP()" title="Cerrar">✕</button>
+      <button class="pip-act-btn" onclick="cerrarPiP()" title="Cerrar">&times;</button>
     </div>
   </div>
 
@@ -640,11 +641,11 @@
 <!-- ══════════════ COMPONENTES: SUITE DE MODALES ══════════════ -->
 <div class="mover" id="m-programar">
   <div class="modal">
-    <div class="mhdr"><div class="mtitle"><img src="iconos/programar.svg" class="icono-svg" /> Programar Nueva Tarea</div><button class="mclose" onclick="cerrarModal('m-programar')">✕</button></div>
+    <div class="mhdr"><div class="mtitle"><img src="iconos/programar.svg" class="icono-svg" /> Programar Nueva Tarea</div><button class="mclose" onclick="cerrarModal('m-programar')">&times;</button></div>
     <div class="mbody">
       <!-- Aviso de Estado en Espera -->
       <div style="font-size:11px;color:var(--amber);background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:6px;padding:8px 10px;margin-bottom:12px;line-height:1.4">
-        ⏳ <strong>Módulo en espera de conexión:</strong> Las tareas programadas se registrarán en la cola local mientras se integra el demonio cron nativo de Tokio en Rust.
+        <strong>[Módulo en espera de conexión]:</strong> Las tareas programadas se registrarán en la cola local mientras se integra el demonio cron nativo de Tokio en Rust.
       </div>
 
       <div class="fg"><label class="fl">Tipo de Tarea</label><select class="fsel" id="m-prog-tipo"><option>Pipeline Completo (1+2+3)</option><option>Solo Extracción (Fase 1)</option><option>Solo Edición (Fase 2)</option><option>Solo Publicación (Fase 3)</option></select></div>
@@ -670,7 +671,7 @@
 </div>
 <div class="mover" id="m-config">
   <div class="modal">
-    <div class="mhdr"><div class="mtitle"><img src="iconos/config.svg" class="icono-svg" /> Configuración del Sistema</div><button class="mclose" onclick="cerrarModal('m-config')">✕</button></div>
+    <div class="mhdr"><div class="mtitle"><img src="iconos/config.svg" class="icono-svg" /> Configuración del Sistema</div><button class="mclose" onclick="cerrarModal('m-config')">&times;</button></div>
     <div class="mbody">
       <div class="grid-2col">
         <div class="fg"><label class="fl">Máx. Scrolls por Sesión</label><input type="number" class="fi" id="cfg-max-scrolls" value="50" /></div>
@@ -747,11 +748,11 @@
         <div id="tg-2fa-box" style="display: none; margin-top: 12px; padding: 12px; background: rgba(245, 166, 35, 0.08); border: 1px solid rgba(245, 166, 35, 0.4); border-radius: 8px;">
           <label class="fl" style="color: #f5a623; margin-bottom: 4px; font-weight: 600;">Tu cuenta tiene Verificación en 2 Pasos (2FA activa en Telegram):</label>
           <div style="font-size: 11px; margin-bottom: 8px; color: var(--tx-dim, #8b949e); line-height: 1.4;">
-            Telegram detectó que tu cuenta tiene una contraseña de seguridad en la nube (configurada en tu app móvil en: <em>Ajustes ➔ Privacidad y Seguridad ➔ Verificación en dos pasos</em>).
+            Telegram detectó que tu cuenta tiene una contraseña de seguridad en la nube (configurada en tu app móvil en: <em>Ajustes &rarr; Privacidad y Seguridad &rarr; Verificación en dos pasos</em>).
           </div>
           <div style="display: flex; gap: 8px; align-items: center;">
             <input type="password" class="fi" id="cfg-tg-2fa" placeholder="Tu contraseña 2FA de Telegram" style="flex: 1;" />
-            <button type="button" class="btn bs" onclick="toggleVerPassword2FA()" style="padding: 6px 10px; font-size: 12px;" title="Mostrar / Ocultar">👁️</button>
+            <button type="button" class="btn bs" onclick="toggleVerPassword2FA()" style="padding: 6px 10px; font-size: 12px;" title="Mostrar / Ocultar"><img src="iconos/buscar.svg" class="icono-svg-sm" /></button>
             <button type="button" class="btn bp" id="btn-tg-2fa-confirmar" onclick="confirmarPasswordTelegram()" style="padding: 6px 16px;">Confirmar Contraseña</button>
           </div>
           <div id="tg-2fa-error-msg" style="display: none; font-size: 11px; margin-top: 8px; color: #f85149; font-weight: 500;"></div>
@@ -763,7 +764,7 @@
 </div>
 <div class="mover" id="m-vel">
   <div class="modal modal-sm">
-    <div class="mhdr"><div class="mtitle"><img src="iconos/pipeline.svg" class="icono-svg" /> Velocidad de Procesamiento</div><button class="mclose" onclick="cerrarModal('m-vel')">✕</button></div>
+    <div class="mhdr"><div class="mtitle"><img src="iconos/pipeline.svg" class="icono-svg" /> Velocidad de Procesamiento</div><button class="mclose" onclick="cerrarModal('m-vel')">&times;</button></div>
     <div class="mbody">
       <p class="modal-desc">Velocidades > 1.0x requieren recodificación con GPU (NVENC/QSV). Velocidad 1.0x usa stream copy directo sin pérdida de calidad.</p>
       <div class="flex-col-gap-8">
@@ -779,7 +780,7 @@
   <div class="modal">
     <div class="mhdr">
       <div class="mtitle" id="m-pub-titulo-hdr"><img src="iconos/telegram.svg" class="icono-svg" id="m-pub-hdr-icon" /> Publicar Video Activo</div>
-      <button class="mclose" onclick="cerrarModal('m-publicar-activo')">✕</button>
+      <button class="mclose" onclick="cerrarModal('m-publicar-activo')">&times;</button>
     </div>
     <div class="mbody">
       <p class="modal-desc">Confirma la publicación directa e individual de este video en la plataforma seleccionada.</p>
@@ -875,7 +876,7 @@
   <div class="modal">
     <div class="mhdr">
       <div class="mtitle"><img src="iconos/telegram.svg" class="icono-svg" /> Publicar Todo por Lote — Telegram HD</div>
-      <button class="mclose" onclick="cerrarModal('m-telegram-lotes')">✕</button>
+      <button class="mclose" onclick="cerrarModal('m-telegram-lotes')">&times;</button>
     </div>
     <div class="mbody">
       <p class="modal-desc">
@@ -947,7 +948,7 @@
 </div>
 <div class="mover" id="m-telegram-manual">
   <div class="modal">
-    <div class="mhdr"><div class="mtitle"><img src="iconos/telegram.svg" class="icono-svg" /> Selección Manual de Videos para Telegram HD (MTProto)</div><button class="mclose" onclick="cerrarModal('m-telegram-manual')">✕</button></div>
+    <div class="mhdr"><div class="mtitle"><img src="iconos/telegram.svg" class="icono-svg" /> Selección Manual de Videos para Telegram HD (MTProto)</div><button class="mclose" onclick="cerrarModal('m-telegram-manual')">&times;</button></div>
     <div class="mbody">
       <p class="modal-desc">Elige el canal objetivo y selecciona por número o casillas los videos que deseas publicar uno por uno a través de MTProto nativo en Rust.</p>
       
@@ -995,7 +996,7 @@
   <div class="modal" style="max-width: 580px;">
     <div class="mhdr">
       <div class="mtitle"><img src="iconos/facebook.svg" class="icono-svg" /> Iniciar / Gestionar Sesión de Facebook</div>
-      <button class="mclose" onclick="cerrarModalFacebook()">✕</button>
+      <button class="mclose" onclick="cerrarModalFacebook()">&times;</button>
     </div>
     <div class="mbody">
       <!-- Estado de Sesión en Vivo -->
@@ -1020,7 +1021,7 @@
         <!-- Estado cuando el navegador está cerrado -->
         <div id="fb-nav-cerrado-box" style="display:block">
           <button type="button" class="btn bp" id="btn-abrir-fb-nav" onclick="abrirNavegadorFacebook()" style="width:100%;padding:10px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px">
-            <img src="iconos/facebook.svg" class="icono-svg-sm" /> 🚀 Abrir Navegador para Iniciar Sesión
+            <img src="iconos/facebook.svg" class="icono-svg-sm" /> Abrir Navegador para Iniciar Sesión
           </button>
         </div>
 
@@ -1035,7 +1036,7 @@
           </p>
           <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
             <button type="button" class="btn bp" id="btn-capturar-fb-sesion" onclick="capturarSesionFacebook()" style="background:linear-gradient(135deg,#22d3a0,#10b981);color:#0a0f1d;font-weight:700;padding:10px 16px;border:none">
-              <img src="iconos/check.svg" class="icono-svg-sm" /> ✅ Ya entré a mi cuenta — Guardar y Vincular Sesión
+              <img src="iconos/check.svg" class="icono-svg-sm" /> Ya entré a mi cuenta — Guardar y Vincular Sesión
             </button>
             <button type="button" class="btn bd bsm" onclick="cerrarNavegadorFacebookManual()" title="Cerrar ventana">
               <img src="iconos/eliminar.svg" class="icono-svg-sm" /> Cancelar / Cerrar Navegador

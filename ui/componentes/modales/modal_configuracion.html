@@ -1,6 +1,6 @@
 <div class="mover" id="m-config">
   <div class="modal">
-    <div class="mhdr"><div class="mtitle"><img src="iconos/config.svg" class="icono-svg" /> Configuración del Sistema</div><button class="mclose" onclick="cerrarModal('m-config')">✕</button></div>
+    <div class="mhdr"><div class="mtitle"><img src="iconos/config.svg" class="icono-svg" /> Configuración del Sistema</div><button class="mclose" onclick="cerrarModal('m-config')">&times;</button></div>
     <div class="mbody">
       <div class="grid-2col">
         <div class="fg"><label class="fl">Máx. Scrolls por Sesión</label><input type="number" class="fi" id="cfg-max-scrolls" value="50" /></div>
@@ -77,11 +77,11 @@
         <div id="tg-2fa-box" style="display: none; margin-top: 12px; padding: 12px; background: rgba(245, 166, 35, 0.08); border: 1px solid rgba(245, 166, 35, 0.4); border-radius: 8px;">
           <label class="fl" style="color: #f5a623; margin-bottom: 4px; font-weight: 600;">Tu cuenta tiene Verificación en 2 Pasos (2FA activa en Telegram):</label>
           <div style="font-size: 11px; margin-bottom: 8px; color: var(--tx-dim, #8b949e); line-height: 1.4;">
-            Telegram detectó que tu cuenta tiene una contraseña de seguridad en la nube (configurada en tu app móvil en: <em>Ajustes ➔ Privacidad y Seguridad ➔ Verificación en dos pasos</em>).
+            Telegram detectó que tu cuenta tiene una contraseña de seguridad en la nube (configurada en tu app móvil en: <em>Ajustes &rarr; Privacidad y Seguridad &rarr; Verificación en dos pasos</em>).
           </div>
           <div style="display: flex; gap: 8px; align-items: center;">
             <input type="password" class="fi" id="cfg-tg-2fa" placeholder="Tu contraseña 2FA de Telegram" style="flex: 1;" />
-            <button type="button" class="btn bs" onclick="toggleVerPassword2FA()" style="padding: 6px 10px; font-size: 12px;" title="Mostrar / Ocultar">👁️</button>
+            <button type="button" class="btn bs" onclick="toggleVerPassword2FA()" style="padding: 6px 10px; font-size: 12px;" title="Mostrar / Ocultar"><img src="iconos/buscar.svg" class="icono-svg-sm" /></button>
             <button type="button" class="btn bp" id="btn-tg-2fa-confirmar" onclick="confirmarPasswordTelegram()" style="padding: 6px 16px;">Confirmar Contraseña</button>
           </div>
           <div id="tg-2fa-error-msg" style="display: none; font-size: 11px; margin-top: 8px; color: #f85149; font-weight: 500;"></div>

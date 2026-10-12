@@ -794,7 +794,7 @@ async function publicarVideoActivo(plat) {
       alertaPlat.style.background = 'rgba(245, 158, 11, 0.12)';
       alertaPlat.style.border = '1px solid rgba(245, 158, 11, 0.35)';
       alertaPlat.style.color = 'var(--amber)';
-      alertaPlat.innerHTML = `<strong>⏳ En espera de conexión con backend:</strong> El publicador de ${nombrePlat} está tipado en el trait de Rust pero no cuenta con API habilitada en este momento.`;
+      alertaPlat.innerHTML = `<strong>[En espera de conexión con backend]</strong> El publicador de ${nombrePlat} está tipado en el trait de Rust pero no cuenta con API habilitada en este momento.`;
     }
   }
 

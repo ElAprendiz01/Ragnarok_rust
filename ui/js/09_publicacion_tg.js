@@ -144,7 +144,7 @@ function actualizarVistasCanalTelegram() {
         <span class="tech-chip" style="cursor:pointer;background:${isActivo ? 'rgba(0,210,255,0.18)' : 'var(--bg2)'};border-color:${isActivo ? 'var(--cyan)' : 'var(--border)'};display:inline-flex;align-items:center;gap:5px;padding:3px 8px" onclick="seleccionarCanalDeLista('${escapeHtml(c)}')">
           <img src="iconos/telegram.svg" class="icono-svg-sm" style="width:11px;height:11px" />
           <span style="color:${isActivo ? 'var(--cyan)' : 'var(--txt1)'}">${escapeHtml(c)}</span>
-          <span style="color:var(--txt3);font-size:11px;margin-left:3px;cursor:pointer" title="Eliminar canal de la lista" onclick="event.stopPropagation();eliminarCanalTelegram('${escapeHtml(c)}')">✕</span>
+          <span style="color:var(--txt3);font-size:11px;margin-left:3px;cursor:pointer" title="Eliminar canal de la lista" onclick="event.stopPropagation();eliminarCanalTelegram('${escapeHtml(c)}')">&times;</span>
         </span>
       `;
     }).join('');
@@ -462,7 +462,7 @@ function renderListaVideosModalTelegram() {
       <span style="color:var(--cyan);font-weight:700">#${i+1}</span>
       <img src="iconos/play.svg" class="icono-svg-sm" style="opacity:0.75" />
       <span style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${v.titulo}">${v.titulo}</span>
-      ${yaSubido ? '<span style="color:#2ea043;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;border:1px solid rgba(46,160,67,0.3);background:rgba(46,160,67,0.1)">✓ Ya en Telegram</span>' : ''}
+      ${yaSubido ? '<span style="color:#2ea043;font-size:10px;font-weight:700;padding:2px 6px;border-radius:4px;border:1px solid rgba(46,160,67,0.3);background:rgba(46,160,67,0.1);display:inline-flex;align-items:center;gap:3px"><img src="iconos/check.svg" class="icono-svg-sm" style="width:10px;height:10px" /> Ya en Telegram</span>' : ''}
       <span style="color:var(--txt3);font-size:11px">${v.dur || 'Original'}</span>
     </label>
   `;
@@ -715,7 +715,7 @@ async function confirmarPasswordTelegram() {
       mostrarToast('error', msg);
       addLog('error', msg);
       if (errBox) {
-        errBox.textContent = '⚠️ ' + msg;
+        errBox.textContent = msg;
         errBox.style.display = 'block';
       }
       const pwdInput = document.getElementById('cfg-tg-2fa');
@@ -729,7 +729,19 @@ async function confirmarPasswordTelegram() {
 }
 
 async function desvincularTelegram() {
-  if (!confirm('¿Deseas desvincular tu sesión de Telegram de este sistema?')) return;
+  const confirmar = await mostrarModalConfirmacion({
+    tag: 'DESVINCULAR SESION OFICIAL',
+    titulo: '¿Desvincular Sesión de Telegram?',
+    subtitulo: 'Se eliminará la sesión local persistente del protocolo MTProto de grammers_client.',
+    itemTitulo: 'Sesión de Telegram',
+    detalles: [{ label: 'Protocolo', desc: 'MTProto Nativo Rust' }],
+    nota: 'Podrás volver a autenticarte en cualquier momento ingresando tu número y código.',
+    textoConfirmar: 'Desvincular Sesión',
+    icono: 'telegram.svg',
+    peligro: true
+  });
+  if (!confirmar) return;
+
   try {
     const res = await fetch(API_BASE + '/api/telegram/desvincular', { method: 'POST' });
     const data = await res.json();
@@ -737,6 +749,11 @@ async function desvincularTelegram() {
       mostrarToast('info', 'Sesión de Telegram desvinculada.');
       addLog('info', 'Sesión de Telegram eliminada.');
       verificarEstadoSesionTelegram();
+    } else {
+      mostrarToast('error', `Error al desvincular: ${data.error || 'Desconocido'}`);
     }
+  } catch(e) {
+    mostrarToast('error', 'Error de conexión con el backend de Ragnarok.');
+  }
 }
 

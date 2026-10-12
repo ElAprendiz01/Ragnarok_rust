@@ -45,7 +45,7 @@ function delTarea(btn) {
     tbody.innerHTML = `
       <tr id="sched-empty-row">
         <td colspan="4" class="td-empty" style="padding:14px;text-align:center">
-          <span style="color:var(--amber);font-weight:600">⏳ Módulo Scheduler en espera de demonio cron nativo en Rust</span><br>
+          <span style="color:var(--amber);font-weight:600">[Módulo Scheduler en espera de demonio cron nativo en Rust]</span><br>
           <span style="font-size:11px;color:var(--txt3)">Las tareas programadas se integrarán al servicio asíncrono de Tokio en la próxima versión.</span>
         </td>
       </tr>

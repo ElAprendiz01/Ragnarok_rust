@@ -57,14 +57,19 @@ async function detenerFase(n) {
   addLog('warn', `Fase <span class="hl">${n}</span> detenida manualmente.`);
 }
 
-function detenerTodo() { [1,2,3].forEach(detenerFase); mostrarToast('warning','Todos los procesos detenidos.'); }
+let pipelineSecuencialActivo = false;
+
+function detenerTodo() {
+  pipelineSecuencialActivo = false;
+  [1, 2, 3].forEach(detenerFase);
+  mostrarToast('warning', 'Todos los procesos detenidos.');
+}
 
 function ejecutarPipelineCompleto() {
-  mostrarToast('success','Pipeline completo iniciado: Fase 1 → 2 → 3');
-  addLog('info','Pipeline completo iniciado.');
+  mostrarToast('success', 'Pipeline completo iniciado: Fase 1 -> Fase 2 -> Fase 3');
+  addLog('info', 'Pipeline completo iniciado secuencialmente (reactivo al servidor).');
+  pipelineSecuencialActivo = true;
   ejecutarFase(1);
-  setTimeout(() => ejecutarFase(2), 4000);
-  setTimeout(() => ejecutarFase(3), 8000);
 }
 
 // ── UI helpers ──
@@ -82,15 +87,6 @@ function setSysUI(tipo, txt) {
   if (badge) badge.className = `sbadge ${tipo}`;
   if (dot) dot.className = `sdot ${tipo==='running'?'pulse':''}`;
   if (text) text.textContent = txt;
-}
-
-// ────────────────────────────────────────────
-
-
-  el.className = `toast ${tipo}`;
-  el.innerHTML = `<span>${ic[tipo]||'<img src="iconos/pipeline.svg" class="icono-svg-sm" />'}</span><span>${msg}</span>`;
-  tc.appendChild(el);
-  setTimeout(() => { el.style.opacity='0'; el.style.transform='translateX(20px)'; el.style.transition='all .3s'; setTimeout(()=>el.remove(),300); }, 3500);
 }
 
 // ────────────────────────────────────────────
@@ -127,6 +123,7 @@ async function refrescarEstadoAutomatico() {
     if (data.fases) {
       for (const [f, st] of Object.entries(data.fases)) {
         if (App.fases[f] !== st) {
+          const stAnterior = App.fases[f];
           App.fases[f] = st;
           const txtMap = { idle: 'Inactiva', running: 'Ejecutando...', done: 'Completada', error: 'Error' };
           setFaseUI(f, st, txtMap[st] || st);
@@ -135,13 +132,27 @@ async function refrescarEstadoAutomatico() {
             if (st === 'running') card.classList.add('active-c');
             else card.classList.remove('active-c');
           }
-          if (f === '1' && st === 'idle') {
+          if (f === '1' && (st === 'idle' || st === 'done')) {
             const f1b = document.getElementById('f1b');
             const f1pct = document.getElementById('f1pct');
             if (f1b) f1b.style.width = '0%';
             if (f1pct) f1pct.textContent = '0%';
             cargarPendientesDesdeServidor();
             cargarGaleriaDesdeServidor();
+          }
+
+          // Transición reactiva de pipeline sin timeouts
+          if (pipelineSecuencialActivo && stAnterior === 'running') {
+            if (f === '1' && (st === 'idle' || st === 'done')) {
+              addLog('ok', 'Fase 1 finalizada. Avanzando a Fase 2 (Edición)...');
+              ejecutarFase(2);
+            } else if (f === '2' && (st === 'idle' || st === 'done')) {
+              addLog('ok', 'Fase 2 finalizada. Avanzando a Fase 3 (Publicación)...');
+              ejecutarFase(3);
+            } else if (f === '3' && (st === 'idle' || st === 'done')) {
+              addLog('ok', 'Pipeline completo finalizado exitosamente.');
+              pipelineSecuencialActivo = false;
+            }
           }
         }
       }

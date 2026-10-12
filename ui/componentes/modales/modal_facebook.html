@@ -2,7 +2,7 @@
   <div class="modal" style="max-width: 580px;">
     <div class="mhdr">
       <div class="mtitle"><img src="iconos/facebook.svg" class="icono-svg" /> Iniciar / Gestionar Sesión de Facebook</div>
-      <button class="mclose" onclick="cerrarModalFacebook()">✕</button>
+      <button class="mclose" onclick="cerrarModalFacebook()">&times;</button>
     </div>
     <div class="mbody">
       <!-- Estado de Sesión en Vivo -->
@@ -27,7 +27,7 @@
         <!-- Estado cuando el navegador está cerrado -->
         <div id="fb-nav-cerrado-box" style="display:block">
           <button type="button" class="btn bp" id="btn-abrir-fb-nav" onclick="abrirNavegadorFacebook()" style="width:100%;padding:10px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px">
-            <img src="iconos/facebook.svg" class="icono-svg-sm" /> 🚀 Abrir Navegador para Iniciar Sesión
+            <img src="iconos/facebook.svg" class="icono-svg-sm" /> Abrir Navegador para Iniciar Sesión
           </button>
         </div>
 
@@ -42,7 +42,7 @@
           </p>
           <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
             <button type="button" class="btn bp" id="btn-capturar-fb-sesion" onclick="capturarSesionFacebook()" style="background:linear-gradient(135deg,#22d3a0,#10b981);color:#0a0f1d;font-weight:700;padding:10px 16px;border:none">
-              <img src="iconos/check.svg" class="icono-svg-sm" /> ✅ Ya entré a mi cuenta — Guardar y Vincular Sesión
+              <img src="iconos/check.svg" class="icono-svg-sm" /> Ya entré a mi cuenta — Guardar y Vincular Sesión
             </button>
             <button type="button" class="btn bd bsm" onclick="cerrarNavegadorFacebookManual()" title="Cerrar ventana">
               <img src="iconos/eliminar.svg" class="icono-svg-sm" /> Cancelar / Cerrar Navegador

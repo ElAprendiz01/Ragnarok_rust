@@ -274,7 +274,7 @@ function actualizarEtiquetasFiltros(cantFiltrados, cantTotal) {
     App.filtros.orden !== 'recientes';
 
   const partes = [];
-  if (App.filtros.soloHoy) partes.push('📅 Descargados hoy');
+  if (App.filtros.soloHoy) partes.push('Descargados hoy');
   if (App.filtros.estado && App.filtros.estado !== 'all') {
     const map = { descargado: 'Descargados', editado: 'Editados', publicado: 'Publicados' };
     partes.push(map[App.filtros.estado] || App.filtros.estado);

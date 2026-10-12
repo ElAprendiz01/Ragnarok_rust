@@ -55,11 +55,10 @@ function cargarVideo(idx) {
       if (emptyTxt) {
         emptyTxt.innerHTML = `
           <strong style="color:var(--cyan);font-size:13px">${escapeHtml(v.titulo)}</strong><br>
-          <span style="color:var(--txt3)">${v.dur} · ${v.tamano} · ${v.partes} partes</span><br><br>
-          <span style="color:var(--txt3);font-size:11px">descargas/${v.id}/video_original.mp4</span>`;
+          <span style="color:var(--txt3)">${v.dur || 'N/A'} · ${v.tamano || ''} · ${v.partes || 1} partes</span><br><br>
+          <span style="color:var(--amber);font-size:11px">[Stream no disponible o archivo en procesamiento]</span>`;
       }
     }
-    simularReproduccion(v.durSec);
   }
 
   document.querySelectorAll('.pip-pl-item').forEach((el,i) => {
@@ -72,29 +71,13 @@ function cargarVideo(idx) {
   const elCur = document.getElementById('pip-cur');
   const elPlayBtn = document.getElementById('pip-play-btn');
 
-  if (elDur) elDur.textContent = v.dur;
+  if (elDur) elDur.textContent = v.dur || '0:00';
   if (elFill) elFill.style.width = '0%';
   if (elThumb) elThumb.style.left = '0%';
   if (elCur) elCur.textContent = '0:00';
-  if (elPlayBtn) elPlayBtn.innerHTML = '<img src="iconos/pausa.svg" class="icono-svg-sm" />';
-}
-
-let simTimer = null;
-function simularReproduccion(totalSec) {
-  if (simTimer) clearInterval(simTimer);
-  let elapsed = 0;
-  const step = 1;
-  simTimer = setInterval(() => {
-    elapsed += step;
-    if (elapsed > totalSec) { clearInterval(simTimer); return; }
-    const pct = (elapsed / totalSec) * 100;
-    const elFill = document.getElementById('pip-prog-fill');
-    const elThumb = document.getElementById('pip-prog-thumb');
-    const elCur = document.getElementById('pip-cur');
-    if (elFill) elFill.style.width = pct + '%';
-    if (elThumb) elThumb.style.left = pct + '%';
-    if (elCur) elCur.textContent = fmtTime(elapsed);
-  }, 100);
+  if (elPlayBtn) elPlayBtn.innerHTML = v.url_stream 
+    ? '<img src="iconos/pausa.svg" class="icono-svg-sm" />' 
+    : '<img src="iconos/play.svg" class="icono-svg-sm" />';
 }
 
 function mostrarPiP() {
@@ -125,11 +108,6 @@ function cerrarPiP() {
     v.currentTime = 0;
     v.removeAttribute('src');
     v.load();
-  }
-
-  if (simTimer) {
-    clearInterval(simTimer);
-    simTimer = null;
   }
 
   const fill = document.getElementById('pip-prog-fill');

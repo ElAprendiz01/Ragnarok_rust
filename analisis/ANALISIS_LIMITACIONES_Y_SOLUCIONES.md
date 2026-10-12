@@ -572,3 +572,16 @@ Tras una verificación exhaustiva entre la interfaz de usuario HTML/JS y los con
    - En [`src/api/publicacion.rs`](file:///c:/rust/rust_Ragnarok/src/api/publicacion.rs#L25), `id_video` se normalizó a `Option<String>` con validación explícita, evitando respuestas HTTP 422 y respondiendo con JSON estructurado `{ "ok": false, "error": "..." }`.
 4. **Plan de Iteración y Matriz de Contratos:**
    - Se formalizó el documento [`analisis/PLAN_ITERATIVO_OPTIMIZACION_Y_VERIFICACION.md`](file:///c:/rust/rust_Ragnarok/analisis/PLAN_ITERATIVO_OPTIMIZACION_Y_VERIFICACION.md) que contiene la matriz completa de conectividad de los 25 endpoints del sistema y el ciclo iterativo de 5 pasos para futuras expansiones.
+
+
+---
+
+## 15. Normalización Integral de Frontend: Purga de Emojis, Reactividad sin Timers y Cero Simulación Falsa
+
+### 15.1 Diagnóstico de Defectos Corregidos
+1. **Purga Total de Emojis:** Se eliminaron todos los caracteres emoji y dingbats especiales en la suite HTML y JS (`👁️`, `🚀`, `✅`, `⏳`, `📅`, `⚠️`, `✓`, `✕`), reemplazándolos por iconos vectoriales SVG profesionales (`iconos/*.svg`) o entidades HTML estándar (`&times;`, `&rarr;`). El resultado verificado con analizador léxico V8 arrojó **0 emojis** en los 11 módulos JS y en los 14 componentes HTML.
+2. **Corrección de Error Crítico de Sintaxis en `09_publicacion_tg.js`:** La función `desvincularTelegram()` contenía un bloque `try` incompleto que provocaba un `SyntaxError: Missing catch or finally after try`. Se completó con manejo defensivo y se sustituyó el `confirm()` nativo por el modal interactivo de estética Obsidian (`mostrarModalConfirmacion`).
+3. **Completitud de `mostrarToast()` en `01_core_estado.js`:** La función se encontraba truncada en el DOM. Se restauró su cuerpo completo con inyección de elementos y temporizador de autodestrucción suave por CSS.
+4. **Pipeline Reactivo sin Timers Hardcodeados en `03_pipeline_fases.js`:** Se eliminaron los `setTimeout` fijos de 4 y 8 segundos en `ejecutarPipelineCompleto()`. El pipeline ahora implementa un flujo guiado por eventos reactivos (`pipelineSecuencialActivo`): el avance de Fase 1 a Fase 2 y de Fase 2 a Fase 3 ocurre únicamente cuando el servidor Rust confirma el estado `idle`/`done` de la fase previa.
+5. **Cero Simulación Artificial en PiP (`07_reproductor_pip.js`):** Se eliminó la función `simularReproduccion` que movía artificialmente una barra de tiempo sobre videos no descargados o sin stream. Ahora el reproductor informa con veracidad el estado real del archivo.
+6. **Cierre de Etiquetas en Layout:** Se corrigió el cierre de etiqueta `</header>` en `ui/componentes/layout/topbar.html`.

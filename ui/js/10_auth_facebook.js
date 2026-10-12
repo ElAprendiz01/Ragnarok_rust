@@ -77,7 +77,7 @@ async function abrirNavegadorFacebook() {
   } catch(e) {
     mostrarToast('error', 'Error de conexión con el backend de Ragnarok.');
   } finally {
-    if (btn) { btn.disabled = false; btn.innerHTML = '<img src="iconos/facebook.svg" class="icono-svg-sm" /> 🚀 Abrir Navegador para Iniciar Sesión'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = '<img src="iconos/facebook.svg" class="icono-svg-sm" /> Abrir Navegador para Iniciar Sesión'; }
   }
 }
 
@@ -112,7 +112,7 @@ async function capturarSesionFacebook() {
   } catch(e) {
     mostrarToast('error', 'Error al comunicarse con el backend.');
   } finally {
-    if (btn) { btn.disabled = false; btn.innerHTML = '<img src="iconos/check.svg" class="icono-svg-sm" /> ✅ Ya entré a mi cuenta — Guardar y Vincular Sesión'; }
+    if (btn) { btn.disabled = false; btn.innerHTML = '<img src="iconos/check.svg" class="icono-svg-sm" /> Ya entré a mi cuenta — Guardar y Vincular Sesión'; }
   }
 }
 

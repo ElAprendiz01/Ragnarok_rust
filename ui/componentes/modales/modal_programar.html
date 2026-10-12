@@ -1,10 +1,10 @@
 <div class="mover" id="m-programar">
   <div class="modal">
-    <div class="mhdr"><div class="mtitle"><img src="iconos/programar.svg" class="icono-svg" /> Programar Nueva Tarea</div><button class="mclose" onclick="cerrarModal('m-programar')">✕</button></div>
+    <div class="mhdr"><div class="mtitle"><img src="iconos/programar.svg" class="icono-svg" /> Programar Nueva Tarea</div><button class="mclose" onclick="cerrarModal('m-programar')">&times;</button></div>
     <div class="mbody">
       <!-- Aviso de Estado en Espera -->
       <div style="font-size:11px;color:var(--amber);background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:6px;padding:8px 10px;margin-bottom:12px;line-height:1.4">
-        ⏳ <strong>Módulo en espera de conexión:</strong> Las tareas programadas se registrarán en la cola local mientras se integra el demonio cron nativo de Tokio en Rust.
+        <strong>[Módulo en espera de conexión]:</strong> Las tareas programadas se registrarán en la cola local mientras se integra el demonio cron nativo de Tokio en Rust.
       </div>
 
       <div class="fg"><label class="fl">Tipo de Tarea</label><select class="fsel" id="m-prog-tipo"><option>Pipeline Completo (1+2+3)</option><option>Solo Extracción (Fase 1)</option><option>Solo Edición (Fase 2)</option><option>Solo Publicación (Fase 3)</option></select></div>
