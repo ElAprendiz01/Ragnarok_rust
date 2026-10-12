@@ -55,8 +55,8 @@ pub async fn ejecutar_tarea_individual_telegram(
 
     if modo == "clips" {
         let mut clips = Vec::new();
-        if let Ok(archivos) = std::fs::read_dir(&dir_procesados) {
-            for a in archivos.flatten() {
+        if let Ok(mut archivos) = tokio::fs::read_dir(&dir_procesados).await {
+            while let Ok(Some(a)) = archivos.next_entry().await {
                 let p = a.path();
                 if p.is_file() && p.extension().map_or(false, |ext| ext == "mp4") {
                     clips.push(p);

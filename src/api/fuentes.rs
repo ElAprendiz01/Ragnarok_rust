@@ -108,7 +108,7 @@ pub async fn agregar_fuente(
         url, SEPARADOR, info.tipo, SEPARADOR, info.url_scroll, SEPARADOR, "True", SEPARADOR, fecha
     );
 
-    let _ = std::fs::create_dir_all(state.ruta_base.join("datos_persistencia"));
+    let _ = tokio::fs::create_dir_all(state.ruta_base.join("datos_persistencia")).await;
     use tokio::io::AsyncWriteExt;
     if let Ok(mut archivo) = tokio::fs::OpenOptions::new()
         .create(true)

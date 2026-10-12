@@ -39,10 +39,23 @@ pub async fn listar_videos(State(state): State<Arc<AppState>>) -> Json<Value> {
     }))
 }
 
+fn id_es_valido(id: &str) -> bool {
+    !id.is_empty()
+        && id.len() <= 128
+        && !id.contains("..")
+        && !id.contains('/')
+        && !id.contains('\\')
+        && id.chars().all(|c| c.is_alphanumeric() || c == '_' || c == '-')
+}
+
 pub async fn eliminar_video(
     Path(id): Path<String>,
     State(state): State<Arc<AppState>>,
 ) -> Json<Value> {
+    if !id_es_valido(&id) {
+        return Json(json!({"ok": false, "error": "Identificador de video inválido."}));
+    }
+
     let dir_descargas = state.ruta_base.join("descargas");
     let dir_procesados = state.ruta_base.join("procesados");
     let id_clone = id.clone();
@@ -72,6 +85,10 @@ pub async fn actualizar_metadata(
     State(state): State<Arc<AppState>>,
     Json(payload): Json<EditarMetaPayload>,
 ) -> Json<Value> {
+    if !id_es_valido(&id) {
+        return Json(json!({"ok": false, "error": "Identificador de video inválido."}));
+    }
+
     let dir_video = state.ruta_base.join("descargas").join(&id);
     let ruta_meta = dir_video.join("metadata.json");
 
@@ -101,6 +118,9 @@ pub async fn recortar_video(
     Json(payload): Json<RecortarPayload>,
 ) -> Json<Value> {
     let id_video = payload.id_video;
+    if !id_es_valido(&id_video) {
+        return Json(json!({"ok": false, "error": "Identificador de video inválido."}));
+    }
     let dur_bloque = payload.duracion_bloque.unwrap_or(480);
     let dur_min = 60;
 

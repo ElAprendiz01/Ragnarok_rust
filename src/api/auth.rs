@@ -19,7 +19,7 @@ pub async fn estado_cookies(State(state): State<Arc<AppState>>) -> Json<Value> {
     let tg_ok = tg_session.exists() || state.telegram_autorizado.load(std::sync::atomic::Ordering::Relaxed);
 
     let (fb_ok, fb_user) = if fb_cookies_path.exists() {
-        if let Ok(contenido) = std::fs::read_to_string(&fb_cookies_path) {
+        if let Ok(contenido) = tokio::fs::read_to_string(&fb_cookies_path).await {
             if let Ok(cookies) = serde_json::from_str::<Vec<serde_json::Value>>(&contenido) {
                 let user_cookie = cookies.iter().find(|c| c.get("name").and_then(|n| n.as_str()) == Some("c_user"));
                 if let Some(c) = user_cookie {
@@ -221,12 +221,12 @@ pub async fn guardar_cookies_facebook(
     let ruta_json = dir_config.join("cookies_facebook.json");
     let ruta_netscape = dir_config.join("cookies_facebook_netscape.txt");
 
-    if let Err(e) = std::fs::create_dir_all(&dir_config) {
+    if let Err(e) = tokio::fs::create_dir_all(&dir_config).await {
         return Json(json!({"ok": false, "error": format!("Error creando directorio config: {}", e)}));
     }
 
     // 1. Guardar JSON
-    if let Err(e) = std::fs::write(&ruta_json, serde_json::to_string_pretty(&cookies_arr).unwrap_or_default()) {
+    if let Err(e) = tokio::fs::write(&ruta_json, serde_json::to_string_pretty(&cookies_arr).unwrap_or_default()).await {
         return Json(json!({"ok": false, "error": format!("Error escribiendo cookies_facebook.json: {}", e)}));
     }
 
@@ -254,7 +254,7 @@ pub async fn guardar_cookies_facebook(
         }
     }
 
-    let _ = std::fs::write(&ruta_netscape, salida);
+    let _ = tokio::fs::write(&ruta_netscape, salida).await;
 
     let msg = match &c_user_encontrado {
         Some(uid) => format!("[FACEBOOK] Cookies guardadas y sincronizadas. Usuario ID: {}", uid),

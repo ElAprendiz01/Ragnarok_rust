@@ -36,6 +36,7 @@ pub async fn ejecutar_tarea_lote_telegram(
 
     let ruta_cola = ruta_persistencia.join("cola_publicacion_telegram.json");
     let actualizar_estado_cola = |activo: bool, total: usize, completados: usize, fallidos: usize, actual: &str| {
+        let r = ruta_cola.clone();
         let datos = json!({
             "ok": true,
             "activo": activo,
@@ -44,15 +45,19 @@ pub async fn ejecutar_tarea_lote_telegram(
             "fallidos": fallidos,
             "video_actual": actual,
         });
-        let _ = std::fs::write(&ruta_cola, datos.to_string());
+        tokio::spawn(async move {
+            let _ = tokio::fs::write(&r, datos.to_string()).await;
+        });
     };
 
     let mut carpetas = Vec::new();
-    if let Ok(entries) = std::fs::read_dir(&dir_objetivo) {
-        for entry in entries.flatten() {
+    if let Ok(mut entries) = tokio::fs::read_dir(&dir_objetivo).await {
+        while let Ok(Some(entry)) = entries.next_entry().await {
             let p = entry.path();
-            if p.is_dir() {
-                carpetas.push(p);
+            if let Ok(meta) = entry.metadata().await {
+                if meta.is_dir() {
+                    carpetas.push(p);
+                }
             }
         }
     }
@@ -95,8 +100,8 @@ pub async fn ejecutar_tarea_lote_telegram(
 
         if modo_video == "clips" {
             let mut clips = Vec::new();
-            if let Ok(archivos) = std::fs::read_dir(ruta_carpeta) {
-                for a in archivos.flatten() {
+            if let Ok(mut archivos) = tokio::fs::read_dir(ruta_carpeta).await {
+                while let Ok(Some(a)) = archivos.next_entry().await {
                     let p = a.path();
                     if p.is_file() && p.extension().map_or(false, |ext| ext == "mp4") {
                         clips.push(p);

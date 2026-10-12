@@ -52,10 +52,12 @@ pub async fn estado_lote_telegram(State(state): State<Arc<AppState>>) -> Json<Va
     let ya_publicados = auditor.obtener_ids_publicados("telegram");
     let dir_descargas = state.ruta_base.join("descargas");
     let mut total_en_disco = 0;
-    if let Ok(entries) = std::fs::read_dir(dir_descargas) {
-        for e in entries.flatten() {
-            if e.path().is_dir() {
-                total_en_disco += 1;
+    if let Ok(mut entries) = tokio::fs::read_dir(&dir_descargas).await {
+        while let Ok(Some(e)) = entries.next_entry().await {
+            if let Ok(meta) = e.metadata().await {
+                if meta.is_dir() {
+                    total_en_disco += 1;
+                }
             }
         }
     }

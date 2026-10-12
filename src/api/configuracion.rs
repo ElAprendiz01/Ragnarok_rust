@@ -21,7 +21,7 @@ pub async fn guardar_config(
     let mgr = ConfigManager::new(&state.ruta_base);
     let ruta_json = state.ruta_base.join("config").join("parametros_globales.json");
 
-    let mut base_val = if let Ok(contenido) = std::fs::read_to_string(&ruta_json) {
+    let mut base_val = if let Ok(contenido) = tokio::fs::read_to_string(&ruta_json).await {
         serde_json::from_str::<Value>(&contenido).unwrap_or(json!({}))
     } else {
         json!({})
