@@ -1,0 +1,1136 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Ragnarok — Panel de Control</title>
+  <meta name="description" content="Panel de control Ragnarok: extracción, edición y publicación multicanal de video." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="estilos_panel.css" />
+</head>
+<body>
+
+<div class="layout">
+
+  <!-- ══════════════ SIDEBAR ══════════════ -->
+  <aside class="sidebar">
+    <div class="logo" onclick="mostrarToast('success','Ragnarok v1.0 — Sistema activo')">R</div>
+
+    <button class="nb active" id="nav-dash" onclick="navTo('dash',this)"><img src="iconos/dashboard.svg" class="icono-nav" alt="Dashboard" /><span class="tip">Dashboard</span></button>
+    <button class="nb" id="nav-estudio" onclick="navTo('estudio',this)"><img src="iconos/estudio.svg" class="icono-nav" alt="Estudio" /><span class="tip">Estudio Reproducción</span></button>
+    <button class="nb" id="nav-videos" onclick="navTo('videos',this)"><img src="iconos/videos.svg" class="icono-nav" alt="Videos" /><span class="tip">Mis Videos</span><span class="dot-badge"></span></button>
+    <button class="nb" id="nav-fases" onclick="navTo('fases',this)"><img src="iconos/fases.svg" class="icono-nav" alt="Control Fases" /><span class="tip">Control Fases</span></button>
+    <button class="nb" id="nav-sched" onclick="navTo('sched',this)"><img src="iconos/programar.svg" class="icono-nav" alt="Programación" /><span class="tip">Programación</span></button>
+    <button class="nb" id="nav-plat" onclick="navTo('plat',this)"><img src="iconos/plataformas.svg" class="icono-nav" alt="Plataformas" /><span class="tip">Plataformas</span></button>
+
+    <div class="nav-sep"></div>
+
+    <div class="sb-bot">
+      <button class="nb" onclick="abrirConfig()"><img src="iconos/config.svg" class="icono-nav" alt="Configuración" /><span class="tip">Configuración</span></button>
+    </div>
+  </aside>
+
+  <!-- ══════════════ TOPBAR ══════════════ -->
+  <header class="topbar">
+    <div class="top-title">Ragnarok — <span id="pg-title">Dashboard</span></div>
+    <div class="top-sp"></div>
+    <!-- Indicador de servidor -->
+    <div id="srv-indicator" class="srv-ind" title="Servidor Ragnarok en http://127.0.0.1:5757">
+      <span id="srv-dot" class="srv-dot-icon"></span>
+      <span id="srv-txt">Conectando...</span>
+    </div>
+    <span id="sys-badge" class="sbadge idle"><span class="sdot" id="sys-dot"></span><span id="sys-txt">Sistema inactivo</span></span>
+    <button class="bico" title="Refrescar" onclick="refrescar()"><img src="iconos/refrescar.svg" class="icono-svg" alt="Refrescar" /></button>
+    <button class="bico" title="Estudio de Reproducción" onclick="navTo('estudio',document.getElementById('nav-estudio'))"><img src="iconos/estudio.svg" class="icono-svg" alt="Estudio" /></button>
+    <button class="bico" title="Logs" onclick="navTo('dash',document.getElementById('nav-dash'))"><img src="iconos/logs.svg" class="icono-svg" alt="Logs" /></button>
+  </header>
+
+  <!-- ══════════════ MAIN ══════════════ -->
+  <main class="main" id="main-content">
+
+    <!-- ══ PÁGINA: DASHBOARD ══ -->
+    <div id="pg-dash">
+
+      <!-- Acciones rápidas -->
+      <div class="fu">
+        <div class="sh"><span class="st">Acciones Rápidas</span></div>
+        <div class="qa-grid qa-grid-responsive">
+          <div class="qa-btn" onclick="ejecutarPipelineCompleto()"><div class="qa-ico"><img src="iconos/pipeline.svg" class="icono-svg-xl" alt="Pipeline" /></div><div class="qa-lbl">Pipeline Completo</div><div class="qa-sub">Fases 1 → 2 → 3</div></div>
+          <div class="qa-btn" onclick="ejecutarFase(1)"><div class="qa-ico"><img src="iconos/buscar.svg" class="icono-svg-xl" alt="Scraping" /></div><div class="qa-lbl">Scraping + Descarga</div><div class="qa-sub">Scraping + yt-dlp</div></div>
+          <div class="qa-btn" onclick="ejecutarDescargaUnicamente()"><div class="qa-ico"><img src="iconos/descargar.svg" class="icono-svg-xl" alt="Descargar" /></div><div class="qa-lbl">Solo Descargar</div><div class="qa-sub">Descarga cola de pendientes</div></div>
+          <div class="qa-btn" onclick="abrirProgramar()"><div class="qa-ico"><img src="iconos/programar.svg" class="icono-svg-xl" alt="Programar" /></div><div class="qa-lbl">Programar Tarea</div><div class="qa-sub">Scheduler automático</div></div>
+          <div class="qa-btn" onclick="navTo('videos',document.getElementById('nav-videos'))"><div class="qa-ico"><img src="iconos/videos.svg" class="icono-svg-xl" alt="Videos" /></div><div class="qa-lbl">Ver Videos</div><div class="qa-sub">Biblioteca descargada</div></div>
+        </div>
+      </div>
+
+      <!-- GESTIÓN DE FUENTES URL -->
+      <div class="fu">
+        <div class="sh"><span class="st">Fuentes de Extracción (Facebook: Grupos, Páginas, Watch...)</span><button class="btn bs bsm" onclick="cargarFuentesDesdeServidor()"><img src="iconos/refrescar.svg" class="icono-svg-sm" /> Recargar Fuentes</button></div>
+        <div class="card card-pad">
+          <!-- Formulario agregar nueva fuente -->
+          <div class="form-grid-btn">
+            <div class="fg">
+              <label class="fl">URL de Facebook (Grupo, Página, Watch, Perfil, Reel, Video Directo...)</label>
+              <input type="url" class="fi" id="nueva-fuente-url" placeholder="https://www.facebook.com/groups/nombre_grupo/videos/ o https://www.facebook.com/watch/" />
+            </div>
+            <button class="btn bp btn-form-action" onclick="agregarFuenteURL()"><img src="iconos/fuentes.svg" class="icono-svg-sm" /> Agregar Fuente</button>
+          </div>
+          <!-- Ejemplos rápidos de tipos de fuente -->
+          <div class="ejemplos-row">
+            <span class="fw-600">Tipos soportados:</span>
+            <span class="tbadge actv btn-pointer" onclick="setEjemplo('https://www.facebook.com/watch/')">Watch Global</span>
+            <span class="tbadge actv btn-pointer" onclick="setEjemplo('https://www.facebook.com/groups/peliculasymovietrailers/videos/')">Grupo</span>
+            <span class="tbadge actv btn-pointer" onclick="setEjemplo('https://www.facebook.com/PeliculasResumenes/videos/')">Página</span>
+            <span class="tbadge actv btn-pointer" onclick="setEjemplo('https://www.facebook.com/reel/1234567890/')">Reel</span>
+          </div>
+          <!-- Tabla de fuentes agregadas -->
+          <table class="stab" id="tabla-fuentes">
+            <thead><tr><th>Tipo de Fuente</th><th>URL Original</th><th>URL de Scroll Generada</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody id="tb-fuentes">
+              <tr><td colspan="5" class="td-empty">No hay fuentes configuradas. Agrega una arriba o inicia el servidor.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- COLA DE PENDIENTES Y DESCARGA DIRECTA -->
+      <div class="fu">
+        <div class="sh">
+          <span class="st"><img src="iconos/descargar.svg" class="icono-svg-sm" style="margin-right:6px" /> Enlaces Directos de Video en Cola de Pendientes (yt-dlp)</span>
+          <div class="flex-gap-8">
+            <button class="btn bs bsm" onclick="cargarPendientesDesdeServidor()"><img src="iconos/refrescar.svg" class="icono-svg-sm" /> Recargar Cola</button>
+            <button class="btn bp bsm" onclick="ejecutarDescargaUnicamente()"><img src="iconos/descargar.svg" class="icono-svg-sm" /> Iniciar Descargas Pendientes</button>
+          </div>
+        </div>
+        <div class="card card-pad">
+          <!-- Formulario agregar enlace directo -->
+          <div class="form-grid-btn">
+            <div class="fg">
+              <label class="fl">Añadir URL Directa de Video (Facebook, YouTube, TikTok...)</label>
+              <input type="url" class="fi" id="nuevo-pendiente-url" placeholder="https://www.facebook.com/watch/?v=1234567890 o enlace directo de video..." />
+            </div>
+            <button class="btn bp btn-form-action" onclick="agregarEnlacePendiente()"><img src="iconos/descargar.svg" class="icono-svg-sm" /> Agregar a Cola</button>
+          </div>
+          <!-- Tabla de enlaces pendientes -->
+          <table class="stab">
+            <thead><tr><th>#</th><th>URL del Video Pendiente</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody id="tb-pendientes">
+              <tr><td colspan="4" class="td-empty">No hay enlaces pendientes en cola_pendientes.txt. Pega uno arriba para descargar directamente.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Estadísticas -->
+      <div class="fu2">
+        <div class="sh"><span class="st">Estadísticas de Sesión</span><span class="txt-small-sub" id="upd-time">—</span></div>
+        <div class="srow">
+          <div class="sc-card"><span class="sc-ico"><img src="iconos/fuentes.svg" class="icono-svg-lg" /></span><div class="sc-lbl">URLs Detectadas</div><div class="sc-val c-cyan" id="s-det">0</div><div class="sc-sub">Historial global</div></div>
+          <div class="sc-card"><span class="sc-ico"><img src="iconos/descargar.svg" class="icono-svg-lg" /></span><div class="sc-lbl">Videos Descargados</div><div class="sc-val c-green" id="s-desc">0</div><div class="sc-sub">MP4 en disco</div></div>
+          <div class="sc-card"><span class="sc-ico"><img src="iconos/cortar.svg" class="icono-svg-lg" /></span><div class="sc-lbl">Clips Generados</div><div class="sc-val c-purple" id="s-clips">0</div><div class="sc-sub">Partes de 8 min</div></div>
+          <div class="sc-card"><span class="sc-ico"><img src="iconos/telegram.svg" class="icono-svg-lg" /></span><div class="sc-lbl">Publicaciones</div><div class="sc-val c-amber" id="s-pub">0</div><div class="sc-sub">Todas las plataformas</div></div>
+        </div>
+      </div>
+
+      <!-- Control de Fases -->
+      <div class="fu3">
+        <div class="sh"><span class="st">Control de Fases</span><button class="btn bs bsm" onclick="detenerTodo()"><img src="iconos/eliminar.svg" class="icono-svg-sm" /> Detener Todo</button></div>
+        <div class="fgrid">
+
+          <!-- FASE 1 -->
+          <div class="fcard" id="fc1">
+            <div class="fglow bg-cyan"></div>
+            <div class="fhdr">
+              <div><div class="fnum">Fase 01</div><div class="fname">Extracción & Descarga</div><div class="fdesc">Scraping Facebook stealth, filtro anti-duplicados y descarga MP4 via yt-dlp</div></div>
+              <div class="fsi idle" id="fsi1"><span class="sdot"></span><span>Inactiva</span></div>
+            </div>
+            <div class="fmet">
+              <div class="fm"><div class="fm-l">Cola Pendiente</div><div class="fm-v c-amber" id="f1p">0</div></div>
+              <div class="fm"><div class="fm-l">Completados</div><div class="fm-v c-green" id="f1c">0</div></div>
+            </div>
+            <div class="pwrap"><div class="plbl"><span>Progreso</span><span id="f1pct">0%</span></div><div class="ptrack"><div class="pfill pfill-cyan" id="f1b"></div></div></div>
+            <div class="fact">
+              <button class="btn bp" id="btn1" onclick="ejecutarFase(1)"><img src="iconos/play.svg" class="icono-svg-sm" /> Iniciar</button>
+              <button class="btn bd bsm" onclick="detenerFase(1)" title="Detener"><img src="iconos/eliminar.svg" class="icono-svg-sm" /></button>
+              <button class="btn bs bsm" onclick="verLogFase(1)"><img src="iconos/logs.svg" class="icono-svg-sm" /> Log</button>
+            </div>
+          </div>
+
+          <!-- FASE 2 -->
+          <div class="fcard" id="fc2">
+            <div class="fglow bg-purple"></div>
+            <div class="fhdr">
+              <div><div class="fnum">Fase 02</div><div class="fname">Edición & Segmentación</div><div class="fdesc">Corte en bloques de 8 min, ajuste de velocidad y aceleración GPU (NVENC/QSV)</div></div>
+              <div class="fsi idle" id="fsi2"><span class="sdot"></span><span>Inactiva</span></div>
+            </div>
+            <div class="fmet">
+              <div class="fm"><div class="fm-l">En Cola</div><div class="fm-v c-purple" id="f2q">0</div></div>
+              <div class="fm"><div class="fm-l">Clips Generados</div><div class="fm-v c-green" id="f2c">0</div></div>
+            </div>
+            <div class="pwrap"><div class="plbl"><span>Procesamiento</span><span id="f2pct">0%</span></div><div class="ptrack"><div class="pfill pfill-purple" id="f2b"></div></div></div>
+            <div class="fact">
+              <button class="btn bp btn-purple" id="btn2" onclick="ejecutarFase(2)"><img src="iconos/play.svg" class="icono-svg-sm" /> Iniciar</button>
+              <button class="btn bd bsm" onclick="detenerFase(2)" title="Detener"><img src="iconos/eliminar.svg" class="icono-svg-sm" /></button>
+              <button class="btn bs bsm" onclick="abrirVelocidad()"><img src="iconos/pipeline.svg" class="icono-svg-sm" /> Vel</button>
+            </div>
+          </div>
+
+          <!-- FASE 3 -->
+          <div class="fcard" id="fc3">
+            <div class="fglow bg-pink"></div>
+            <div class="fhdr">
+              <div><div class="fnum">Fase 03</div><div class="fname">Publicación Multi-Redes</div><div class="fdesc">Distribución multicanal y purga automática tras confirmación en todas las redes</div></div>
+              <div class="fsi idle" id="fsi3"><span class="sdot"></span><span>Inactiva</span></div>
+            </div>
+            <div class="fmet">
+              <div class="fm"><div class="fm-l">Clips Pendientes</div><div class="fm-v c-pink" id="f3p">0</div></div>
+              <div class="fm"><div class="fm-l">Publicados Hoy</div><div class="fm-v c-green" id="f3c">0</div></div>
+            </div>
+            <div class="pwrap"><div class="plbl"><span>Publicación</span><span id="f3pct">0%</span></div><div class="ptrack"><div class="pfill pfill-pink" id="f3b"></div></div></div>
+            <div class="fact">
+              <button class="btn bp btn-pink" id="btn3" onclick="ejecutarFase(3)"><img src="iconos/play.svg" class="icono-svg-sm" /> Iniciar</button>
+              <button class="btn bd bsm" onclick="detenerFase(3)" title="Detener"><img src="iconos/eliminar.svg" class="icono-svg-sm" /></button>
+              <button class="btn bs bsm" onclick="abrirProgramar()" title="Programar"><img src="iconos/programar.svg" class="icono-svg-sm" /></button>
+            </div>
+          </div>
+
+          <!-- FASE 4: TELEGRAM HD -->
+          <div class="fcard" id="fc4">
+            <div class="fglow" style="background:#0088cc"></div>
+            <div class="fhdr">
+              <div><div class="fnum">Fase 04</div><div class="fname">Telegram HD Directo</div><div class="fdesc">Envío de video HD completo sin comprimir directamente al canal de Telegram</div></div>
+              <div class="fsi idle" id="fsi4"><span class="sdot"></span><span>Inactiva</span></div>
+            </div>
+            <div class="fmet">
+              <div class="fm"><div class="fm-l">HD Pendientes</div><div class="fm-v c-cyan" id="f4p">0</div></div>
+              <div class="fm"><div class="fm-l">Subidos Canal</div><div class="fm-v c-green" id="f4c">0</div></div>
+            </div>
+            <div class="pwrap"><div class="plbl"><span>Subida Telegram</span><span id="f4pct">0%</span></div><div class="ptrack"><div class="pfill" id="f4b" style="width:0%;background:linear-gradient(90deg,#005588,#0088cc)"></div></div></div>
+            <div class="fact">
+              <button class="btn bp btn-telegram" id="btn4" onclick="abrirModalTelegramLotes()"><img src="iconos/telegram.svg" class="icono-svg-sm" /> Publicar Todo</button>
+              <button class="btn bp bsm btn-telegram" onclick="abrirModalTelegramManual()"><img src="iconos/videos.svg" class="icono-svg-sm" /> Selección Manual</button>
+              <button class="btn bd bsm" onclick="detenerFase(4)"><img src="iconos/eliminar.svg" class="icono-svg-sm" /> Parar</button>
+            </div>
+          </div>
+
+
+        </div>
+      </div>
+
+      <!-- Bottom Grid: Scheduler + Plataformas + Cola + Log -->
+      <div class="fu4">
+        <div class="bgrid">
+          <div class="bleft">
+
+            <!-- Scheduler -->
+            <div class="card">
+              <div class="ctitle"><span class="cico cico-purple"><img src="iconos/programar.svg" class="icono-svg-sm" /></span>Programación de Publicaciones</div>
+              <div class="sched-row">
+                <div class="fg"><label class="fl">Tarea</label>
+                  <select class="fsel" id="sc-tarea"><option>Pipeline Completo (1+2+3)</option><option>Solo Extracción</option><option>Solo Edición</option><option>Solo Publicación</option></select></div>
+                <div class="fg"><label class="fl">Fecha</label><input type="date" class="fi" id="sc-fecha" /></div>
+                <div class="fg"><label class="fl">Hora</label><input type="time" class="fi" id="sc-hora" value="03:00" /></div>
+                <button class="btn bp btn-add-task" onclick="addTarea()"><img src="iconos/programar.svg" class="icono-svg-sm" /> Add</button>
+              </div>
+              <table class="stab">
+                <thead><tr><th>Tarea</th><th>Fecha & Hora</th><th>Estado</th><th></th></tr></thead>
+                <tbody id="tb-tareas">
+                  <tr><td class="tn">Pipeline Completo</td><td class="tt">2026-08-29 03:00</td><td><span class="tbadge pend">Pendiente</span></td><td><button class="btn bs bsm" onclick="delTarea(this)"><img src="iconos/eliminar.svg" class="icono-svg-sm" /></button></td></tr>
+                  <tr><td class="tn">Solo Publicación</td><td class="tt">2026-08-28 22:00</td><td><span class="tbadge actv">Activa</span></td><td><button class="btn bs bsm" onclick="delTarea(this)"><img src="iconos/eliminar.svg" class="icono-svg-sm" /></button></td></tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Log -->
+            <div class="log-card">
+              <div class="log-hdr">
+                <div class="log-title"><span class="live-dot"></span>Log de Actividad en Tiempo Real</div>
+                <div style="display:flex;gap:6px;align-items:center">
+                  <button class="btn bd bsm" id="btn-log-detener-lote" style="display:none;font-size:11px;padding:3px 8px;border-color:rgba(239,68,68,0.4);background:rgba(239,68,68,0.15);color:var(--red)" onclick="detenerLoteTelegram()"><img src="iconos/eliminar.svg" class="icono-svg-sm" /> Detener Lote</button>
+                  <button class="btn bs bsm" onclick="limpiarLog()"><img src="iconos/eliminar.svg" class="icono-svg-sm" /> Limpiar</button>
+                </div>
+              </div>
+              <div class="log-body" id="log-bd"></div>
+            </div>
+
+          </div>
+
+          <!-- Derecha: Plataformas + Cola -->
+          <div class="flex-col-gap-14">
+
+            <!-- Plataformas -->
+            <div class="card">
+              <div class="ctitle"><span class="cico cico-cyan"><img src="iconos/plataformas.svg" class="icono-svg-sm" /></span>Plataformas & Sesiones Reales</div>
+              <div class="pl-list">
+                <div class="pl-row"><div class="pl-logo yt"><img src="iconos/youtube.svg" alt="YouTube" /></div><div class="pl-info"><div class="pl-name">YouTube</div><div class="pl-st warn" id="st-yt">Verificando sesión...</div></div><label class="tog"><input type="checkbox" checked id="tog-yt" onchange="togPlat('YouTube',this)"><div class="tog-track"></div></label></div>
+                <div class="pl-row"><div class="pl-logo tk"><img src="iconos/tiktok.svg" alt="TikTok" /></div><div class="pl-info"><div class="pl-name">TikTok</div><div class="pl-st warn" id="st-tk">Verificando sesión...</div></div><label class="tog"><input type="checkbox" checked id="tog-tk" onchange="togPlat('TikTok',this)"><div class="tog-track"></div></label></div>
+                <div class="pl-row"><div class="pl-logo fb"><img src="iconos/facebook.svg" alt="Facebook" /></div><div class="pl-info"><div class="pl-name">Facebook</div><div class="pl-st warn" id="st-fb">Verificando sesión...</div></div><label class="tog"><input type="checkbox" id="tog-fb" onchange="togPlat('Facebook',this)"><div class="tog-track"></div></label></div>
+                <div class="pl-row"><div class="pl-logo ig"><img src="iconos/instagram.svg" alt="Instagram" /></div><div class="pl-info"><div class="pl-name">Instagram</div><div class="pl-st warn" id="st-ig">Verificando sesión...</div></div><label class="tog"><input type="checkbox" checked id="tog-ig" onchange="togPlat('Instagram',this)"><div class="tog-track"></div></label></div>
+                <div class="pl-row pl-row-col">
+                  <div class="flex-between">
+                    <div class="flex-align-11">
+                      <div class="pl-logo tg tg-logo"><img src="iconos/telegram.svg" alt="Telegram" /></div>
+                      <div class="pl-info">
+                        <div class="pl-name">Telegram (Canal Objetivo)</div>
+                        <div class="pl-st warn" id="st-tg">Verificando sesión...</div>
+                        <div class="pl-st ok" id="ck-tg" style="font-size:10px;margin-top:2px">Canal: <span id="lbl-canal-tg" class="lbl-tg">Sin canal configurado</span></div>
+                      </div>
+                    </div>
+                    <label class="tog"><input type="checkbox" checked id="tog-tg" onchange="togPlat('Telegram',this)"><div class="tog-track"></div></label>
+                  </div>
+                  <div style="margin-top:6px;display:flex;flex-direction:column;gap:6px">
+                    <div style="display:flex;gap:6px;align-items:center">
+                      <select id="select-canal-tg" class="fsel" style="flex:1" onchange="seleccionarCanalDashboard(this.value)">
+                        <option value="">-- Canales guardados --</option>
+                      </select>
+                    </div>
+                    <div class="flex-gap-6-m2">
+                      <input type="text" id="input-canal-tg" class="fi input-tg" placeholder="Escribir nuevo canal (ej: @canal)" value="" />
+                      <button class="btn bp bsm btn-telegram" onclick="guardarCanalTelegram()"><img src="iconos/guardar.svg" class="icono-svg-sm" /> Guardar</button>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+              <div class="flex-col-gap-6-m10">
+                <button class="btn bp bsm bfw" style="background:linear-gradient(135deg, #1877f2, #0d65d9);color:#fff;border:none" onclick="abrirModalFacebook()"><img src="iconos/facebook.svg" class="icono-svg-sm" /> Iniciar / Gestionar Sesión Facebook</button>
+                <button class="btn bp bsm bfw btn-telegram" onclick="iniciarSesionTelegramWeb()"><img src="iconos/sesion.svg" class="icono-svg-sm" /> Iniciar/Guardar Sesión Telegram Web</button>
+                <button class="btn bs bsm bfw" onclick="abrirConfig()"><img src="iconos/config.svg" class="icono-svg-sm" /> Gestionar Cookies JSON / Config</button>
+              </div>
+            </div>
+
+            <!-- Cola de Videos Real -->
+            <div class="card">
+              <div class="ctitle"><span class="cico cico-amber"><img src="iconos/videos.svg" class="icono-svg-sm" /></span>Cola de Videos en Disco</div>
+              <div class="ql" id="cola-list">
+                <div class="td-empty">Cargando cola de videos reales...</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div><!-- /pg-dash -->
+
+    <!-- ══ PÁGINA: MIS VIDEOS ══ -->
+    <div id="pg-videos" style="display:none">
+      <div class="fu">
+        <div class="sh">
+          <span class="st">Biblioteca de Videos Descargados</span>
+          <div class="flex-gap-8" style="flex-wrap:wrap;align-items:center">
+            <select class="fsel sel-filter" id="gal-filter" style="width:auto" onchange="cambiarFiltroEstado(this.value)">
+              <option value="all">Todos los estados</option>
+              <option value="descargado">Descargados</option>
+              <option value="editado">Editados</option>
+              <option value="publicado">Publicados</option>
+            </select>
+            <button class="btn bs bsm" id="btn-filtro-hoy-gal" onclick="toggleFiltroHoy()"><img src="iconos/pipeline.svg" class="icono-svg-sm" /> Descargados Hoy</button>
+            <select class="fsel" id="gal-sort" style="width:auto" onchange="cambiarOrdenVideos(this.value)">
+              <option value="recientes">Más recientes</option>
+              <option value="antiguos">Más antiguos</option>
+            </select>
+            <button class="btn bp bsm" onclick="ejecutarFase(1)"><img src="iconos/descargar.svg" class="icono-svg-sm" /> Descargar Más</button>
+          </div>
+        </div>
+        <!-- Etiqueta de Filtros Activos (Galería) -->
+        <div id="gal-filtro-tags" style="display:none;align-items:center;gap:8px;margin-bottom:12px;font-size:11px;padding:6px 12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:6px">
+          <span style="color:var(--txt3)">Filtros activos:</span>
+          <span class="tbadge actv" id="gal-filtro-badge">Todos</span>
+          <button class="btn bd bsm" style="padding:2px 8px;font-size:10px;height:auto" onclick="limpiarTodosFiltros()"><img src="iconos/eliminar.svg" class="icono-svg-sm" style="width:10px;height:10px" /> Mostrar todos</button>
+        </div>
+        <div class="gallery-grid" id="gallery-grid"></div>
+      </div>
+    </div>
+
+    <!-- ══ PÁGINA: ESTUDIO DE REPRODUCCIÓN & EDICIÓN INTELIGENTE ══ -->
+    <div id="pg-estudio" style="display:none">
+      <div class="fu">
+        <div class="sh">
+          <div>
+            <span class="st"><img src="iconos/estudio.svg" class="icono-svg-sm" style="margin-right:6px" /> Estudio de Reproducción & Editor de Publicación</span>
+            <div class="txt-small-sub" style="margin-top:2px">Reproducción adaptativa con pixeles controlados, edición de metadatos en tiempo real y publicación multicanal.</div>
+          </div>
+          <div class="flex-gap-8">
+            <button class="btn bs bsm" onclick="toggleModoTeatro()" id="btn-modo-teatro" title="Modo Cine / Expansión"><img src="iconos/videos.svg" class="icono-svg-sm" /> Modo Cine</button>
+            <button class="btn bs bsm" onclick="activarModoFlotanteDesdeEstudio()" title="Minimizar a widget flotante"><img src="iconos/pantalla.svg" class="icono-svg-sm" /> Modo Flotante (PiP)</button>
+            <button class="btn bp bsm" onclick="cargarGaleriaDesdeServidor()"><img src="iconos/refrescar.svg" class="icono-svg-sm" /> Sincronizar Disco</button>
+          </div>
+        </div>
+
+        <div class="estudio-grid" id="estudio-grid-layout">
+          <!-- Columna Izquierda: Reproductor Principal + Editor de Metadata -->
+          <div class="estudio-col-video">
+            
+            <!-- Contenedor Inteligente del Reproductor -->
+            <div class="estudio-player-card" id="estudio-player-box">
+              <div class="estudio-video-viewport" id="estudio-viewport">
+                <video id="estudio-video" preload="metadata" playsinline></video>
+                <div id="estudio-poster" class="estudio-poster" onclick="estudioPosterClick()">
+                  <div class="estudio-poster-ico"><img src="iconos/videos.svg" class="icono-svg-xl" /></div>
+                  <div class="estudio-poster-title" id="estudio-poster-title">Ningún video seleccionado</div>
+                  <div class="estudio-poster-sub" id="estudio-poster-sub">Haz clic en un video de la biblioteca lateral para reproducir y editar</div>
+                  <button class="btn bp bsm" id="estudio-poster-play-btn" style="margin-top:10px;display:none" onclick="event.stopPropagation();estudioPosterClick()"><img src="iconos/play.svg" class="icono-svg-sm" /> Reproducir Video</button>
+                </div>
+                <div class="estudio-badge-overlay" id="estudio-badge-overlay">
+                  <span id="estudio-badge-estado" class="badge-pill">Sin video</span>
+                  <span id="estudio-badge-resolucion" class="badge-pill dim">HD</span>
+                </div>
+              </div>
+
+              <!-- Barra de Controles Pro -->
+              <div class="estudio-controls">
+                <div class="estudio-prog-wrap" id="estudio-prog-wrap" onclick="seekEstudio(event)">
+                  <div class="estudio-prog-track">
+                    <div class="estudio-prog-fill" id="estudio-prog-fill"></div>
+                    <div class="estudio-prog-thumb" id="estudio-prog-thumb"></div>
+                  </div>
+                </div>
+                <div class="estudio-controls-row">
+                  <div class="flex-align-8">
+                    <button class="estudio-btn" onclick="estudioPrev()" title="Anterior"><img src="iconos/anterior.svg" class="icono-svg-sm" /></button>
+                    <button class="estudio-btn" onclick="estudioSkip(-10)" title="Retroceder 10s"><img src="iconos/retroceder.svg" class="icono-svg-sm" /></button>
+                    <button class="estudio-btn main" id="estudio-play-btn" onclick="estudioTogglePlay()" title="Reproducir / Pausar"><img src="iconos/play.svg" class="icono-svg-sm" /></button>
+                    <button class="estudio-btn" onclick="estudioSkip(10)" title="Avanzar 10s"><img src="iconos/avanzar.svg" class="icono-svg-sm" /></button>
+                    <button class="estudio-btn" onclick="estudioNext()" title="Siguiente"><img src="iconos/siguiente.svg" class="icono-svg-sm" /></button>
+                    <div class="estudio-time-box">
+                      <span id="estudio-cur">0:00</span> / <span id="estudio-dur">0:00</span>
+                    </div>
+                  </div>
+
+                  <div class="flex-align-8">
+                    <div class="estudio-vol-box">
+                      <button class="estudio-btn-icon" id="estudio-mute-btn" onclick="estudioToggleMute()"><img src="iconos/audio.svg" class="icono-svg-sm" /></button>
+                      <input type="range" class="estudio-vol-slider" id="estudio-vol" min="0" max="1" step="0.05" value="1" oninput="estudioSetVol(this.value)">
+                    </div>
+
+                    <div class="estudio-speed-chips">
+                      <span class="estudio-spd" data-spd="0.75" onclick="estudioSetSpeed(0.75)">0.75x</span>
+                      <span class="estudio-spd actv" data-spd="1.0" onclick="estudioSetSpeed(1.0)">1.0x</span>
+                      <span class="estudio-spd" data-spd="1.25" onclick="estudioSetSpeed(1.25)">1.25x</span>
+                      <span class="estudio-spd" data-spd="1.5" onclick="estudioSetSpeed(1.5)">1.5x</span>
+                      <span class="estudio-spd" data-spd="2.0" onclick="estudioSetSpeed(2.0)">2.0x</span>
+                    </div>
+
+                    <button class="estudio-btn-icon" onclick="estudioToggleFullscreen()" title="Pantalla Completa"><img src="iconos/pantalla.svg" class="icono-svg-sm" /></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Panel Editor de Metadata en Tiempo Real (JSON) -->
+            <div class="card card-pad estudio-meta-card">
+              <div class="flex-between" style="margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:10px">
+                <div class="flex-align-8">
+                  <span class="cico cico-cyan"><img src="iconos/config.svg" class="icono-svg-sm" /></span>
+                  <div>
+                    <div style="font-weight:700;font-size:14px;color:var(--txt1)">Editor de Metadatos de Publicación (JSON en Tiempo Real)</div>
+                    <div style="font-size:11px;color:var(--txt3)">Lo que edites aquí se guarda directamente en metadata.json y será lo que se publique automáticamente.</div>
+                  </div>
+                </div>
+                <div class="flex-align-8">
+                  <span id="meta-save-badge" class="meta-badge-idle"><img src="iconos/check.svg" class="icono-svg-sm" /> Sincronizado</span>
+                  <button class="btn bp bsm" onclick="guardarMetadatosActivo()"><img src="iconos/guardar.svg" class="icono-svg-sm" /> Guardar Ahora</button>
+                  <button class="btn bd bsm" onclick="confirmarEliminarVideoEstudio()" title="Eliminar este video, sus clips y su archivo JSON permanentemente del disco"><img src="iconos/eliminar.svg" class="icono-svg-sm" /> Eliminar Video & JSON</button>
+                </div>
+              </div>
+
+              <!-- Formulario de edición en vivo -->
+              <div class="form-grid-meta">
+                <div class="fg">
+                  <div class="flex-between">
+                    <label class="fl">Título del Video (Máx 100 caracteres para Facebook/YouTube/TikTok)</label>
+                    <span id="meta-chars-titulo" style="font-size:11px;font-family:var(--mono);color:var(--txt3)">0/100</span>
+                  </div>
+                  <input type="text" class="fi" id="meta-input-titulo" placeholder="Título descriptivo del video o película..." oninput="onInputMetadatos('titulo', this.value)" />
+                </div>
+
+                <div class="fg">
+                  <div class="flex-between">
+                    <label class="fl">Descripción & Sinopsis (Hashtags, menciones, créditos)</label>
+                    <span id="meta-chars-desc" style="font-size:11px;font-family:var(--mono);color:var(--txt3)">0 caracteres</span>
+                  </div>
+                  <textarea class="fi" id="meta-input-desc" rows="3" placeholder="Escribe la sinopsis, hashtags (#Peliculas #Accion) o descripción que acompañará la publicación..." oninput="onInputMetadatos('desc', this.value)"></textarea>
+                </div>
+
+                <!-- Chips técnicos del video -->
+                <div class="meta-tech-row">
+                  <div class="tech-chip"><span class="tech-lbl">ID:</span> <span id="meta-tech-id" class="tech-val">—</span></div>
+                  <div class="tech-chip"><span class="tech-lbl">Duración:</span> <span id="meta-tech-dur" class="tech-val">—</span></div>
+                  <div class="tech-chip"><span class="tech-lbl">Tamaño:</span> <span id="meta-tech-tam" class="tech-val">—</span></div>
+                  <div class="tech-chip"><span class="tech-lbl">Resolución:</span> <span id="meta-tech-res" class="tech-val">—</span></div>
+                  <div class="tech-chip"><span class="tech-lbl">Archivo:</span> <span id="meta-tech-path" class="tech-val">—</span></div>
+                </div>
+
+                <!-- Acciones rápidas de publicación directa para este video -->
+                <div class="meta-pub-actions">
+                  <span style="font-size:11px;font-weight:600;color:var(--txt2);margin-right:6px">Publicar este video:</span>
+                  <button class="btn bs bsm btn-pub-tg" onclick="publicarVideoActivo('telegram')"><img src="iconos/telegram.svg" class="icono-svg-sm" /> Telegram HD</button>
+                  <button class="btn bs bsm" onclick="publicarVideoActivo('youtube')"><img src="iconos/youtube.svg" class="icono-svg-sm" /> YouTube</button>
+                  <button class="btn bs bsm" onclick="publicarVideoActivo('tiktok')"><img src="iconos/tiktok.svg" class="icono-svg-sm" /> TikTok</button>
+                  <button class="btn bs bsm" onclick="publicarVideoActivo('facebook')"><img src="iconos/facebook.svg" class="icono-svg-sm" /> Facebook</button>
+                  <button class="btn bs bsm" onclick="publicarVideoActivo('instagram')"><img src="iconos/instagram.svg" class="icono-svg-sm" /> Instagram</button>
+                  <button class="btn bp bsm" onclick="ejecutarFase(3)"><img src="iconos/pipeline.svg" class="icono-svg-sm" /> Todas las Redes</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Módulo de Recorte Inteligente en Partes / Segmentación -->
+            <div class="card card-pad estudio-recorte-card" style="margin-top:14px">
+              <div class="flex-between" style="margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:10px">
+                <div class="flex-align-8">
+                  <span class="cico cico-amber"><img src="iconos/cortar.svg" class="icono-svg-sm" /></span>
+                  <div>
+                    <div style="font-weight:700;font-size:14px;color:var(--txt1)">Módulo de Recorte & Segmentación de Video</div>
+                    <div style="font-size:11px;color:var(--txt3)">Divide el video en partes optimizadas para TikTok, YouTube Shorts, Reels o secuencias para Facebook/Telegram.</div>
+                  </div>
+                </div>
+                <div class="flex-align-8">
+                  <span id="badge-estado-recorte" class="tbadge pend">Sin clips</span>
+                </div>
+              </div>
+
+              <!-- Controles de recorte -->
+              <div style="display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:end;margin-bottom:12px">
+                <div>
+                  <label class="fl">Duración por Segmento</label>
+                  <select class="fsel" id="sel-duracion-recorte" onchange="onCambioDuracionRecorte(this.value)">
+                    <option value="60">60 segundos (TikTok / Shorts / Reels)</option>
+                    <option value="180">3 minutos (180s — Facebook / Clips Medios)</option>
+                    <option value="480" selected>8 minutos (480s — Estándar Fase 2 / Películas)</option>
+                    <option value="custom">Personalizado (segundos)...</option>
+                  </select>
+                </div>
+                <div id="wrap-duracion-custom" style="display:none;width:120px">
+                  <label class="fl">Segundos</label>
+                  <input type="number" class="fi" id="input-duracion-custom" placeholder="Ej: 90" min="10" max="7200" value="60" />
+                </div>
+                <div style="width:160px">
+                  <label class="fl">Velocidad</label>
+                  <select class="fsel" id="sel-velocidad-recorte">
+                    <option value="1.0" selected>1.0x (Normal)</option>
+                    <option value="1.25">1.25x (Rápido)</option>
+                    <option value="1.5">1.5x (Acelerado)</option>
+                  </select>
+                </div>
+                <div>
+                  <button class="btn bp" id="btn-ejecutar-recorte" onclick="ejecutarRecorteEstudio()" style="white-space:nowrap;height:34px">
+                    <img src="iconos/cortar.svg" class="icono-svg-sm" /> Cortar en Partes
+                  </button>
+                </div>
+              </div>
+
+              <!-- Contenedor de Clips Hijos Generados -->
+              <div id="contenedor-clips-estudio" style="background:var(--bg1);border:1px solid var(--border);border-radius:8px;padding:10px">
+                <div class="flex-between" style="margin-bottom:8px">
+                  <span style="font-size:12px;font-weight:700;color:var(--txt1)" id="titulo-clips-estudio">Clips Recortados (0 partes)</span>
+                  <span style="font-size:11px;color:var(--txt3)">Haz clic en un clip para previsualizarlo en el reproductor</span>
+                </div>
+                <div id="lista-clips-estudio" style="display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto">
+                  <div style="font-size:11px;color:var(--txt3);text-align:center;padding:12px">El video actual no tiene clips recortados. Usa el botón superior para generarlos.</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Columna Derecha: Biblioteca Lateral Inteligente -->
+          <div class="estudio-col-lista">
+            <div class="card card-pad estudio-playlist-card">
+              <div class="flex-between" style="margin-bottom:10px">
+                <div class="flex-align-8">
+                  <span class="cico cico-amber"><img src="iconos/videos.svg" class="icono-svg" /></span>
+                  <span style="font-weight:700;font-size:13px;color:var(--txt1)">Lista de Videos</span>
+                </div>
+                <div class="flex-align-8">
+                  <button class="btn bd bsm" id="btn-limpiar-filtro-estudio" style="display:none;padding:2px 7px;font-size:10px;height:auto" onclick="limpiarTodosFiltros()" title="Mostrar todos los videos"><img src="iconos/eliminar.svg" class="icono-svg-sm" style="width:10px;height:10px" /> Mostrar todos</button>
+                  <span class="tbadge actv" id="estudio-total-badge">0 videos</span>
+                </div>
+              </div>
+
+              <!-- Filtro y Buscador en Tiempo Real -->
+              <div class="estudio-search-row">
+                <input type="text" class="fi" id="estudio-input-busqueda" placeholder="Buscar por título o ID..." oninput="filtrarVideosEstudio(this.value)" />
+                <select class="fsel" id="estudio-filter-estado" onchange="cambiarFiltroEstado(this.value)">
+                  <option value="all">Todos</option>
+                  <option value="descargado">Descargados</option>
+                  <option value="editado">Editados</option>
+                  <option value="publicado">Publicados</option>
+                </select>
+              </div>
+
+              <!-- Fila de Filtro Fecha 'Hoy' y Orden Más Reciente / Más Viejo -->
+              <div style="display:flex;gap:6px;margin-bottom:8px;align-items:center">
+                <button class="btn bs bsm" id="btn-filtro-hoy-estudio" style="flex:1;justify-content:center;font-size:11px" onclick="toggleFiltroHoy()"><img src="iconos/pipeline.svg" class="icono-svg-sm" /> Descargados Hoy</button>
+                <select class="fsel" id="estudio-sort" style="flex:1;font-size:11px" onchange="cambiarOrdenVideos(this.value)">
+                  <option value="recientes">Más recientes</option>
+                  <option value="antiguos">Más antiguos</option>
+                </select>
+              </div>
+
+              <!-- Etiqueta de Filtros Activos con Botón de Mostrar Todos -->
+              <div id="estudio-filtro-tags" style="display:none;align-items:center;justify-content:space-between;gap:6px;margin-bottom:8px;font-size:11px;padding:4px 8px;background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.2);border-radius:4px">
+                <span style="color:var(--cyan);font-weight:600;font-size:10px" id="estudio-filtro-badge">Filtrado activo</span>
+                <button class="btn bd bsm" style="padding:2px 6px;font-size:9px;height:auto" onclick="limpiarTodosFiltros()">Mostrar todos</button>
+              </div>
+
+              <!-- Contenedor con Scroll Optimizado -->
+              <div class="estudio-playlist-scroll" id="estudio-playlist-container">
+                <div class="td-empty">Cargando biblioteca de videos...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main><!-- /main -->
+</div><!-- /layout -->
+
+<!-- ══════════════ PiP PLAYER ══════════════ -->
+<div id="pip-player">
+  <!-- Drag Handle -->
+  <div id="pip-drag">
+    <div class="pip-drag-title" id="pip-title">Sin video seleccionado</div>
+    <div class="pip-drag-actions">
+      <button class="pip-act-btn" onclick="pipMinimize()" title="Minimizar">—</button>
+      <button class="pip-act-btn" onclick="pipExpand()" title="Expandir"><img src="iconos/pantalla.svg" class="icono-svg-sm" /></button>
+      <button class="pip-act-btn" onclick="cerrarPiP()" title="Cerrar">✕</button>
+    </div>
+  </div>
+
+  <!-- Video -->
+  <div id="pip-video-wrap">
+    <video id="pip-video" preload="metadata"></video>
+    <div id="pip-poster">
+      <div class="pip-empty-ico"><img src="iconos/play.svg" class="icono-svg-xl" /></div>
+      <div class="pip-empty-txt">Selecciona un video de la<br>Biblioteca o de la Cola</div>
+    </div>
+  </div>
+
+  <!-- Controles -->
+  <div id="pip-controls">
+    <div class="pip-progress-wrap" id="pip-prog-wrap" onclick="seekVideo(event)">
+      <div class="pip-progress-track">
+        <div class="pip-progress-fill" id="pip-prog-fill"></div>
+        <div class="pip-progress-thumb" id="pip-prog-thumb"></div>
+      </div>
+    </div>
+    <div class="pip-time">
+      <span id="pip-cur">0:00</span>
+      <span id="pip-dur">0:00</span>
+    </div>
+    <div class="pip-btns">
+      <button class="pip-btn" onclick="pipPrev()" title="Anterior"><img src="iconos/anterior.svg" class="icono-svg-sm" /></button>
+      <button class="pip-btn" onclick="pip10Back()" title="-10s"><img src="iconos/retroceder.svg" class="icono-svg-sm" /></button>
+      <button class="pip-btn main" id="pip-play-btn" onclick="togglePlay()"><img src="iconos/play.svg" class="icono-svg-sm" /></button>
+      <button class="pip-btn" onclick="pip10Fwd()" title="+10s"><img src="iconos/avanzar.svg" class="icono-svg-sm" /></button>
+      <button class="pip-btn" onclick="pipNext()" title="Siguiente"><img src="iconos/siguiente.svg" class="icono-svg-sm" /></button>
+      <div class="pip-sp"></div>
+      <div class="pip-vol-wrap">
+        <button class="pip-btn btn-font-14" onclick="toggleMute()" id="pip-mute-btn"><img src="iconos/audio.svg" class="icono-svg-sm" /></button>
+        <input type="range" class="pip-vol" id="pip-vol" min="0" max="1" step="0.05" value="1" oninput="setVol(this.value)">
+      </div>
+      <span class="pip-speed-badge" id="pip-spd" onclick="cycleSpeed()">1.0x</span>
+    </div>
+  </div>
+
+  <!-- Playlist -->
+  <div class="pip-playlist" id="pip-playlist"></div>
+</div>
+
+<!-- MODALES -->
+<div class="mover" id="m-programar">
+  <div class="modal">
+    <div class="mhdr"><div class="mtitle"><img src="iconos/programar.svg" class="icono-svg" /> Programar Nueva Tarea</div><button class="mclose" onclick="cerrarModal('m-programar')">✕</button></div>
+    <div class="mbody">
+      <div class="fg"><label class="fl">Tipo de Tarea</label><select class="fsel"><option>Pipeline Completo (1+2+3)</option><option>Solo Extracción (Fase 1)</option><option>Solo Edición (Fase 2)</option><option>Solo Publicación (Fase 3)</option></select></div>
+      <div class="fg"><label class="fl">URL Objetivo (Facebook)</label><input type="url" class="fi" placeholder="https://www.facebook.com/watch/" /></div>
+      <div class="grid-2col">
+        <div class="fg"><label class="fl">Fecha</label><input type="date" class="fi" /></div>
+        <div class="fg"><label class="fl">Hora</label><input type="time" class="fi" value="03:00" /></div>
+      </div>
+      <div class="fg"><label class="fl">Repetición</label><select class="fsel"><option>Sin repetición (una vez)</option><option>Cada hora</option><option>Cada 6 horas</option><option>Diariamente</option><option>Cada semana</option></select></div>
+      <div class="fg"><label class="fl">Plataformas</label>
+        <div class="pl-sel">
+          <label class="plci"><input type="checkbox" checked> <img src="iconos/youtube.svg" class="icono-svg-sm" /> YouTube</label>
+          <label class="plci"><input type="checkbox" checked> <img src="iconos/tiktok.svg" class="icono-svg-sm" /> TikTok</label>
+          <label class="plci"><input type="checkbox"> <img src="iconos/facebook.svg" class="icono-svg-sm" /> Facebook</label>
+          <label class="plci"><input type="checkbox" checked> <img src="iconos/instagram.svg" class="icono-svg-sm" /> Instagram</label>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">Velocidad</label><select class="fsel"><option>1.0x — Normal (sin recodificar)</option><option>1.25x — Rápido (GPU)</option><option>1.50x — Muy rápido (GPU)</option></select></div>
+    </div>
+    <div class="mfoot"><button class="btn bs" onclick="cerrarModal('m-programar')">Cancelar</button><button class="btn bp" onclick="guardarProg()"><img src="iconos/guardar.svg" class="icono-svg-sm" /> Guardar Tarea</button></div>
+  </div>
+</div>
+
+<div class="mover" id="m-config">
+  <div class="modal">
+    <div class="mhdr"><div class="mtitle"><img src="iconos/config.svg" class="icono-svg" /> Configuración del Sistema</div><button class="mclose" onclick="cerrarModal('m-config')">✕</button></div>
+    <div class="mbody">
+      <div class="grid-2col">
+        <div class="fg"><label class="fl">Máx. Scrolls por Sesión</label><input type="number" class="fi" id="cfg-max-scrolls" value="50" /></div>
+        <div class="fg"><label class="fl">Factor de Velocidad</label><select class="fsel" id="cfg-velocidad"><option value="1.0">1.0x (Normal)</option><option value="1.25">1.25x (Rápido)</option><option value="1.5">1.50x (Muy rápido)</option></select></div>
+      </div>
+      <div class="grid-2col">
+        <div class="fg"><label class="fl">Duración Bloque (min)</label><input type="number" class="fi" id="cfg-dur-bloque" value="8" /></div>
+        <div class="fg"><label class="fl">Hilos FFmpeg</label><input type="number" class="fi" id="cfg-threads" value="4" /></div>
+      </div>
+      <div class="fg">
+        <label class="fl">Modo Navegador Playwright</label>
+        <select class="fsel" id="cfg-headless">
+          <option value="false">Visible (Navegador en ventana gráfica)</option>
+          <option value="true">Headless (Navegador oculto en segundo plano)</option>
+        </select>
+      </div>
+
+      <!-- Sección Telegram MTProto Nativo -->
+      <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--bdr, #2a2e39);">
+        <div style="font-weight: 600; font-size: 13px; color: #4da6ff; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <img src="iconos/telegram.svg" class="icono-svg-sm" /> Telegram MTProto (Subida Directa Sin Navegadores)
+          </div>
+          <div id="tg-session-status-badge">
+            <span id="tg-status-text" style="font-size: 11px; padding: 3px 8px; border-radius: 12px; background: rgba(255,255,255,0.06); color: var(--tx-dim, #8b949e);">
+              <span style="color: #888;">●</span> Sin sesión
+            </span>
+          </div>
+        </div>
+
+        <div class="grid-2col">
+          <div class="fg">
+            <label class="fl">Telegram App api_id</label>
+            <input type="number" class="fi" id="cfg-tg-api-id" placeholder="Ej: 28471928" />
+          </div>
+          <div class="fg">
+            <label class="fl">Telegram App api_hash</label>
+            <input type="text" class="fi" id="cfg-tg-api-hash" placeholder="Ej: a1b2c3d4e5f6..." />
+          </div>
+        </div>
+
+        <div class="grid-2col">
+          <div class="fg">
+            <label class="fl">Canal Objetivo Telegram</label>
+            <input type="text" class="fi" id="cfg-tg-canal" placeholder="@tu_canal" />
+          </div>
+          <div class="fg">
+            <label class="fl">Teléfono registrado en la API (+código de país)</label>
+            <input type="text" class="fi" id="cfg-tg-phone" placeholder="Ej: +521234567890" />
+          </div>
+        </div>
+
+        <!-- Acciones de Vinculación en Vivo -->
+        <div style="margin-top: 12px; display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
+          <button type="button" class="btn bs" id="btn-tg-desvincular" onclick="desvincularTelegram()" style="display: none; color: #f85149; border-color: rgba(248,81,73,0.3);">
+            Desvincular Sesión
+          </button>
+          <button type="button" class="btn bp" id="btn-tg-solicitar" onclick="solicitarCodigoTelegram()" style="font-size: 12px; padding: 6px 14px;">
+            <img src="iconos/telegram.svg" class="icono-svg-sm" /> Solicitar Código a Telegram
+          </button>
+        </div>
+
+        <!-- Caja de Verificación de Código SMS / App -->
+        <div id="tg-code-box" style="display: none; margin-top: 12px; padding: 12px; background: rgba(77, 166, 255, 0.08); border: 1px solid rgba(77, 166, 255, 0.4); border-radius: 8px;">
+          <label class="fl" style="color: #4da6ff; margin-bottom: 6px; font-weight: 600;">Código de 5 dígitos recibido en Telegram:</label>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="text" class="fi" id="cfg-tg-code" placeholder="12345" maxlength="8" style="max-width: 140px; font-size: 16px; font-weight: bold; letter-spacing: 3px; text-align: center;" />
+            <button type="button" class="btn bp" onclick="confirmarCodigoTelegram()" style="padding: 6px 16px;">Verificar y Vincular</button>
+          </div>
+          <div style="font-size: 11px; margin-top: 6px; color: var(--tx-dim, #8b949e);">Revisa el chat de servicio oficial de Telegram en tu teléfono o PC e ingresa el código.</div>
+        </div>
+
+        <!-- Caja de Contraseña 2FA si aplica -->
+        <div id="tg-2fa-box" style="display: none; margin-top: 12px; padding: 12px; background: rgba(245, 166, 35, 0.08); border: 1px solid rgba(245, 166, 35, 0.4); border-radius: 8px;">
+          <label class="fl" style="color: #f5a623; margin-bottom: 4px; font-weight: 600;">Tu cuenta tiene Verificación en 2 Pasos (2FA activa en Telegram):</label>
+          <div style="font-size: 11px; margin-bottom: 8px; color: var(--tx-dim, #8b949e); line-height: 1.4;">
+            Telegram detectó que tu cuenta tiene una contraseña de seguridad en la nube (configurada en tu app móvil en: <em>Ajustes ➔ Privacidad y Seguridad ➔ Verificación en dos pasos</em>).
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="password" class="fi" id="cfg-tg-2fa" placeholder="Tu contraseña 2FA de Telegram" style="flex: 1;" />
+            <button type="button" class="btn bs" onclick="toggleVerPassword2FA()" style="padding: 6px 10px; font-size: 12px;" title="Mostrar / Ocultar">👁️</button>
+            <button type="button" class="btn bp" id="btn-tg-2fa-confirmar" onclick="confirmarPasswordTelegram()" style="padding: 6px 16px;">Confirmar Contraseña</button>
+          </div>
+          <div id="tg-2fa-error-msg" style="display: none; font-size: 11px; margin-top: 8px; color: #f85149; font-weight: 500;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="mfoot"><button class="btn bs" onclick="cerrarModal('m-config')">Cancelar</button><button class="btn bp" onclick="guardarConfig()"><img src="iconos/guardar.svg" class="icono-svg-sm" /> Guardar Configuración</button></div>
+  </div>
+</div>
+
+<div class="mover" id="m-vel">
+  <div class="modal modal-sm">
+    <div class="mhdr"><div class="mtitle"><img src="iconos/pipeline.svg" class="icono-svg" /> Velocidad de Procesamiento</div><button class="mclose" onclick="cerrarModal('m-vel')">✕</button></div>
+    <div class="mbody">
+      <p class="modal-desc">Velocidades > 1.0x requieren recodificación con GPU (NVENC/QSV). Velocidad 1.0x usa stream copy directo sin pérdida de calidad.</p>
+      <div class="flex-col-gap-8">
+        <label class="plci lbl-pointer"><input type="radio" name="vel" value="1.0" checked class="accent-cyan"><div><div class="vel-title">1.0x — Normal</div><div class="vel-sub">Stream copy. 0% CPU/RAM. Corte en ~1 segundo.</div></div></label>
+        <label class="plci lbl-pointer"><input type="radio" name="vel" value="1.25" class="accent-cyan"><div><div class="vel-title">1.25x — Rápido</div><div class="vel-sub">setpts=0.8*PTS + atempo=1.25. Encoder GPU.</div></div></label>
+        <label class="plci lbl-pointer"><input type="radio" name="vel" value="1.5" class="accent-cyan"><div><div class="vel-title">1.50x — Muy Rápido</div><div class="vel-sub">setpts=0.666*PTS + atempo=1.5. Encoder GPU.</div></div></label>
+      </div>
+    </div>
+    <div class="mfoot"><button class="btn bs" onclick="cerrarModal('m-vel')">Cancelar</button><button class="btn bp" onclick="aplicarVel()"><img src="iconos/check.svg" class="icono-svg-sm" /> Aplicar</button></div>
+  </div>
+</div>
+
+<!-- Modal de Publicación Directa del Video Activo -->
+<div class="mover" id="m-publicar-activo">
+  <div class="modal">
+    <div class="mhdr">
+      <div class="mtitle" id="m-pub-titulo-hdr"><img src="iconos/telegram.svg" class="icono-svg" id="m-pub-hdr-icon" /> Publicar Video Activo</div>
+      <button class="mclose" onclick="cerrarModal('m-publicar-activo')">✕</button>
+    </div>
+    <div class="mbody">
+      <p class="modal-desc">Confirma la publicación directa e individual de este video en la plataforma seleccionada.</p>
+      
+      <!-- Ficha de resumen del video -->
+      <div style="background:var(--bg1);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:14px">
+        <div style="font-weight:700;font-size:13px;color:var(--txt1);margin-bottom:6px;word-break:break-word" id="m-pub-video-titulo">—</div>
+        <div class="meta-tech-row" style="margin:0;gap:6px">
+          <div class="tech-chip"><span class="tech-lbl">ID:</span> <span id="m-pub-video-id" class="tech-val">—</span></div>
+          <div class="tech-chip"><span class="tech-lbl">Duración:</span> <span id="m-pub-video-dur" class="tech-val">—</span></div>
+          <div class="tech-chip"><span class="tech-lbl">Tamaño:</span> <span id="m-pub-video-tam" class="tech-val">—</span></div>
+          <div class="tech-chip"><span class="tech-lbl">Estado:</span> <span id="m-pub-video-estado" class="tech-val">—</span></div>
+        </div>
+      </div>
+
+      <!-- Configuración del canal / destino (especialmente para Telegram) -->
+      <div class="fg" id="m-pub-grupo-canal">
+        <div class="flex-between" style="margin-bottom:4px">
+          <label class="fl" style="margin:0">Canal Objetivo (<span id="m-pub-plat-label">Telegram HD</span>)</label>
+          <span id="m-pub-canal-estado" style="font-size:11px;font-family:var(--mono);color:var(--cyan)"></span>
+        </div>
+
+        <!-- Selector desplegable de canales guardados -->
+        <div id="m-pub-canales-dropdown-container" style="margin-bottom:6px">
+          <div style="font-size:11px;color:var(--txt2);margin-bottom:3px;font-weight:600">Elegir canal guardado:</div>
+          <select id="m-pub-canales-select" class="fsel" onchange="seleccionarCanalDeLista(this.value)">
+            <!-- Se puebla dinámicamente -->
+          </select>
+        </div>
+
+        <div style="display:flex;gap:6px">
+          <input type="text" id="m-pub-canal" class="fi" placeholder="Ingresa el canal (ej: @mi_canal o nombre_canal)" list="m-pub-canales-datalist" />
+          <datalist id="m-pub-canales-datalist"></datalist>
+          <button type="button" class="btn bs bsm" id="btn-guardar-canal-rapido" onclick="guardarCanalRapidoModal()" title="Guardar este canal en la lista"><img src="iconos/guardar.svg" class="icono-svg-sm" /> Guardar</button>
+        </div>
+
+        <!-- Chips de selección rápida -->
+        <div id="m-pub-canales-chips-container" style="display:none;margin-top:6px">
+          <div style="display:flex;flex-wrap:wrap;gap:5px;align-items:center" id="m-pub-canales-chips">
+            <!-- Chips de canales -->
+          </div>
+        </div>
+
+        <div style="font-size:11px;color:var(--txt3);margin-top:4px" id="m-pub-canal-hint">
+          Canal donde se publicará este video con su título y sinopsis. Si introduces varios canales, se guardarán para elegirlos cuando quieras.
+        </div>
+      </div>
+
+      <!-- Selección de modo: Video Completo HD vs Clips Segmentados -->
+      <div class="fg">
+        <label class="fl">Modo de Publicación</label>
+        <div class="flex-col-gap-8">
+          <label class="plci lbl-pointer" id="m-pub-modo-completo-wrap">
+            <input type="radio" name="m-pub-modo" value="completo" id="m-pub-radio-completo" checked class="accent-cyan">
+            <div>
+              <div class="vel-title" id="m-pub-modo-completo-titulo"><img src="iconos/play.svg" class="icono-svg-sm" /> Video Completo Original (Entero)</div>
+              <div class="vel-sub" id="m-pub-modo-completo-desc">Sube la película o video completo en alta definición directamente a la plataforma.</div>
+            </div>
+          </label>
+          <label class="plci lbl-pointer" id="m-pub-modo-clips-wrap">
+            <input type="radio" name="m-pub-modo" value="clips" id="m-pub-radio-clips" class="accent-cyan">
+            <div>
+              <div class="vel-title" id="m-pub-modo-clips-titulo"><img src="iconos/cortar.svg" class="icono-svg-sm" /> Segmentos / Clips Procesados (Secuencia)</div>
+              <div class="vel-sub" id="m-pub-modo-clips-desc">Sube los fragmentos divididos en partes con sus marcas de tiempo y numeración.</div>
+            </div>
+          </label>
+        </div>
+        <div id="m-pub-modo-nota" style="display:none;font-size:11px;color:var(--amber);background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:6px;padding:8px;margin-top:6px"></div>
+      </div>
+
+      <!-- Modo de Ventana del Navegador: Visible vs Invisible (Headless) -->
+      <div class="fg">
+        <label class="fl"><img src="iconos/pantalla.svg" class="icono-svg-sm" style="margin-right:6px;vertical-align:middle" />Modo de Ventana del Navegador</label>
+        <select id="m-pub-modo-browser" class="fsel">
+          <option value="visible" selected>Modo Visible (Headed — Ver ventana de Chromium en pantalla)</option>
+          <option value="headless">Modo Invisible (Headless — En segundo plano sin ventana)</option>
+        </select>
+        <div style="font-size:11px;color:var(--txt3);margin-top:4px">
+          Elige si deseas ver el navegador Chromium en pantalla o subir el video en segundo plano sin interrumpir tu trabajo.
+        </div>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn bs" onclick="cerrarModal('m-publicar-activo')">Cancelar</button>
+      <button class="btn bp btn-telegram" id="m-pub-btn-confirmar" onclick="confirmarPublicacionDirecta()"><img src="iconos/telegram.svg" class="icono-svg-sm" /> Confirmar y Publicar Ahora</button>
+    </div>
+  </div>
+</div>
+
+<div class="mover" id="m-telegram-lotes">
+  <div class="modal">
+    <div class="mhdr">
+      <div class="mtitle"><img src="iconos/telegram.svg" class="icono-svg" /> Publicar Todo por Lote — Telegram HD</div>
+      <button class="mclose" onclick="cerrarModal('m-telegram-lotes')">✕</button>
+    </div>
+    <div class="mbody">
+      <p class="modal-desc">
+        Se creará una cola temporal en disco para procesar todos los videos uno a uno de forma secuencial, garantizando bajo consumo de memoria RAM y verificando la subida real en el DOM antes de cerrar Chromium.
+      </p>
+
+      <div class="fg">
+        <label class="fl">Canal Objetivo de Telegram</label>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <select id="m-tg-lote-canal-select" class="fsel" onchange="seleccionarCanalModalLote(this.value)">
+            <option value="">-- Elegir canal guardado --</option>
+          </select>
+          <div class="flex-gap-6-m2">
+            <input type="text" id="m-tg-lote-canal" class="fi" placeholder="O ingresa uno nuevo (ej: @canal)" value="" />
+            <button class="btn bp bsm btn-telegram" onclick="guardarCanalTelegramModalLote()"><img src="iconos/guardar.svg" class="icono-svg-sm" /> Guardar Canal</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modo de Ventana del Navegador: Visible vs Invisible (Headless) -->
+      <div class="fg">
+        <label class="fl"><img src="iconos/pantalla.svg" class="icono-svg-sm" style="margin-right:6px;vertical-align:middle" />Modo de Ventana del Navegador</label>
+        <select id="m-tg-lote-browser" class="fsel">
+          <option value="visible" selected>Modo Visible (Headed — Ver ventana de Chromium en pantalla)</option>
+          <option value="headless">Modo Invisible (Headless — En segundo plano sin ventana)</option>
+        </select>
+        <div style="font-size:11px;color:var(--txt3);margin-top:4px">
+          Elige si deseas observar el proceso de subida en pantalla o ejecutarlo en modo invisible.
+        </div>
+      </div>
+
+      <!-- Modo de Video: Original HD Completo vs Clips Segmentados -->
+      <div class="fg">
+        <label class="fl">Formato de Contenido a Publicar</label>
+        <select id="m-tg-lote-modo-video" class="fsel">
+          <option value="completo" selected>Videos Completos Originales (HD desde /descargas)</option>
+          <option value="clips">Clips / Segmentos Recortados (desde /procesados)</option>
+        </select>
+      </div>
+
+      <!-- Info de rendimiento y videos detectados -->
+      <div class="dialog-target-box" style="margin-bottom:0">
+        <div class="flex-between">
+          <span style="font-size:12px;color:var(--txt2)">Videos en biblioteca:</span>
+          <span id="m-tg-lote-cant-videos" style="font-family:var(--mono);font-size:12px;color:var(--cyan);font-weight:700">Calculando...</span>
+        </div>
+        <div style="font-size:11px;color:var(--txt3);line-height:1.4;margin-top:4px">
+          Arquitectura Zero-RAM: Los videos no se cargan simultáneamente en memoria; se procesan de forma atómica y pausada con supervisión activa de DOM.
+        </div>
+      </div>
+
+      <!-- Control de Resubida o Reanudación -->
+      <div class="fg" style="margin-top:10px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--txt2);user-select:none">
+          <input type="checkbox" id="m-tg-lote-forzar" style="accent-color:var(--cyan);cursor:pointer" />
+          <span><strong>Forzar resubida completa</strong> (Ignorar completados y subir de nuevo)</span>
+        </label>
+        <div style="font-size:11px;color:var(--txt3);margin-top:3px;margin-left:22px">
+          Desmarcado por defecto: Reanuda automáticamente solo videos pendientes o fallidos, evitando duplicados en Telegram.
+        </div>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn bs" onclick="cerrarModal('m-telegram-lotes')">Cancelar</button>
+      <button class="btn bd" id="btn-modal-detener-lote" style="display:none;background:rgba(239,68,68,0.2);color:var(--red);border:1px solid rgba(239,68,68,0.4)" onclick="detenerLoteTelegram()"><img src="iconos/eliminar.svg" class="icono-svg-sm" /> Detener Lote Activo</button>
+      <button class="btn bp btn-telegram" id="btn-iniciar-lote-tg" onclick="iniciarPublicacionLoteTelegram()"><img src="iconos/telegram.svg" class="icono-svg-sm" /> Iniciar Publicación por Lote</button>
+    </div>
+  </div>
+</div>
+
+<div class="mover" id="m-telegram-manual">
+  <div class="modal">
+    <div class="mhdr"><div class="mtitle"><img src="iconos/telegram.svg" class="icono-svg" /> Selección Manual de Videos para Telegram Web</div><button class="mclose" onclick="cerrarModal('m-telegram-manual')">✕</button></div>
+    <div class="mbody">
+      <p class="modal-desc">Elige el canal objetivo y selecciona por número o casillas los videos que deseas publicar uno por uno de forma cautelosa.</p>
+      
+      <div class="fg">
+        <label class="fl">Canal Objetivo de Telegram</label>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <select id="m-tg-canal-select" class="fsel" onchange="seleccionarCanalModalManual(this.value)">
+            <option value="">-- Elegir canal guardado --</option>
+          </select>
+          <div class="flex-gap-6-m2">
+            <input type="text" id="m-tg-canal-input" class="fi" placeholder="O ingresa uno nuevo (ej: @canal)" value="" />
+            <button class="btn bp bsm btn-telegram" onclick="guardarCanalTelegramModal()"><img src="iconos/guardar.svg" class="icono-svg-sm" /> Guardar Canal</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modo de Ventana del Navegador: Visible vs Invisible (Headless) -->
+      <div class="fg">
+        <label class="fl"><img src="iconos/pantalla.svg" class="icono-svg-sm" style="margin-right:6px;vertical-align:middle" />Modo de Ventana del Navegador</label>
+        <select id="m-tg-modo-browser" class="fsel">
+          <option value="visible" selected>Modo Visible (Headed — Ver ventana de Chromium en pantalla)</option>
+          <option value="headless">Modo Invisible (Headless — En segundo plano sin ventana)</option>
+        </select>
+        <div style="font-size:11px;color:var(--txt3);margin-top:4px">
+          Elige si deseas observar el proceso de subida en pantalla o ejecutarlo en modo invisible.
+        </div>
+      </div>
+
+      <div class="fg">
+        <label class="fl">Selección por Números (Separados por coma, ej: 1, 2, 5, 8)</label>
+        <input type="text" id="m-tg-numeros-input" class="fi" placeholder="Ej: 1, 2, 3 o 1, 5, 8..." oninput="filtrarCasillasPorNumeros(this.value)" />
+      </div>
+
+      <div class="fg">
+        <label class="fl">Lista de Videos Disponibles en Biblioteca</label>
+        <div id="m-tg-lista-videos" style="max-height:220px;overflow-y:auto;background:var(--bg1);border:1px solid var(--border);border-radius:6px;padding:8px;display:flex;flex-direction:column;gap:6px">
+          <!-- Lista generada dinámicamente con checkboxes numerados #1, #2, #3... -->
+        </div>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn bs" onclick="cerrarModal('m-telegram-manual')">Cancelar</button>
+      <button class="btn bp btn-telegram" onclick="publicarSeleccionTelegramModal()"><img src="iconos/telegram.svg" class="icono-svg-sm" /> Iniciar Publicación Cautelosa</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Gestor de Sesión de Facebook -->
+<div class="mover" id="m-facebook-auth">
+  <div class="modal" style="max-width: 580px;">
+    <div class="mhdr">
+      <div class="mtitle"><img src="iconos/facebook.svg" class="icono-svg" /> Iniciar / Gestionar Sesión de Facebook</div>
+      <button class="mclose" onclick="cerrarModalFacebook()">✕</button>
+    </div>
+    <div class="mbody">
+      <!-- Estado de Sesión en Vivo -->
+      <div style="background:var(--bg1);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:11px;color:var(--txt3);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">Estado de Cuenta Facebook</div>
+          <div id="fb-modal-status-text" style="font-size:14px;font-weight:700;color:var(--txt1);margin-top:2px">Verificando sesión...</div>
+        </div>
+        <span id="fb-modal-badge" class="tbadge pend">Verificando</span>
+      </div>
+
+      <!-- MÉTODO 1 (SUPER SENCILLO Y 100% SEGURO): Iniciar Sesión en Navegador Asistido -->
+      <div style="background:var(--bg2);border:1px solid rgba(0,212,255,0.4);border-radius:8px;padding:16px;margin-bottom:14px">
+        <div style="font-weight:700;font-size:13px;color:var(--txt1);display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="background:rgba(0,212,255,0.15);color:var(--cyan);border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold">1</span>
+          Iniciar Sesión Manual en Navegador (Recomendado)
+        </div>
+        <p style="font-size:11px;color:var(--txt2);margin-bottom:12px;line-height:1.4">
+          Abre el navegador con tu perfil seguro. Podrás iniciar sesión con tu usuario y contraseña con total tranquilidad (<strong>sin bots ni rastreadores automáticos que bloqueen tu cuenta</strong>). Cuando estés dentro, solo pulsa <em>"Guardar y Vincular Sesión"</em>.
+        </p>
+
+        <!-- Estado cuando el navegador está cerrado -->
+        <div id="fb-nav-cerrado-box" style="display:block">
+          <button type="button" class="btn bp" id="btn-abrir-fb-nav" onclick="abrirNavegadorFacebook()" style="width:100%;padding:10px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px">
+            <img src="iconos/facebook.svg" class="icono-svg-sm" /> 🚀 Abrir Navegador para Iniciar Sesión
+          </button>
+        </div>
+
+        <!-- Estado cuando el navegador está abierto en pantalla -->
+        <div id="fb-nav-abierto-box" style="display:none;background:rgba(0,212,255,0.06);border:1px dashed var(--cyan);border-radius:6px;padding:12px;text-align:center">
+          <div style="display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;color:var(--cyan);font-weight:600;margin-bottom:8px">
+            <span class="live-dot" style="background:var(--cyan)"></span>
+            Ventana de Navegador abierta en pantalla
+          </div>
+          <p style="font-size:11px;color:var(--txt3);margin-bottom:12px;line-height:1.4">
+            Escribe tus credenciales e inicia sesión en la ventana de Facebook. Cuando veas tu muro o perfil, pulsa el botón verde para guardar la sesión:
+          </p>
+          <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+            <button type="button" class="btn bp" id="btn-capturar-fb-sesion" onclick="capturarSesionFacebook()" style="background:linear-gradient(135deg,#22d3a0,#10b981);color:#0a0f1d;font-weight:700;padding:10px 16px;border:none">
+              <img src="iconos/check.svg" class="icono-svg-sm" /> ✅ Ya entré a mi cuenta — Guardar y Vincular Sesión
+            </button>
+            <button type="button" class="btn bd bsm" onclick="cerrarNavegadorFacebookManual()" title="Cerrar ventana">
+              <img src="iconos/eliminar.svg" class="icono-svg-sm" /> Cancelar / Cerrar Navegador
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MÉTODO 2 (OPCIONAL / AVANZADO): Pegar Cookies JSON Colapsable -->
+      <details style="background:var(--bg1);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:14px">
+        <summary style="font-size:11px;font-weight:600;color:var(--txt2);cursor:pointer;user-select:none">
+          Opciones avanzadas: Pegar Cookies JSON manualmente
+        </summary>
+        <div style="margin-top:10px">
+          <p style="font-size:11px;color:var(--txt3);margin-bottom:6px">
+            Si prefieres exportar cookies con una extensión desde otro navegador, pégalas aquí en formato JSON:
+          </p>
+          <textarea class="fi" id="fb-cookies-json-input" rows="3" placeholder='[{"name":"c_user","value":"1000..."}, ...]' style="font-family:var(--mono);font-size:11px;resize:vertical"></textarea>
+          <div style="display:flex;justify-content:flex-end;margin-top:8px">
+            <button type="button" class="btn bp bsm" onclick="guardarCookiesFacebookManual()"><img src="iconos/guardar.svg" class="icono-svg-sm" /> Guardar JSON</button>
+          </div>
+        </div>
+      </details>
+
+      <!-- Garantía Anti-Bloqueos -->
+      <div style="background:rgba(34,211,160,0.06);border:1px solid rgba(34,211,160,0.25);border-radius:8px;padding:10px 12px;font-size:11px;color:var(--txt2);line-height:1.4">
+        <div style="font-weight:700;color:var(--green);margin-bottom:2px;display:flex;align-items:center;gap:6px">
+          <img src="iconos/check.svg" class="icono-svg-sm" /> 100% Protegido contra bloqueos de Meta:
+        </div>
+        El navegador utiliza tu propio perfil persistente sin sondeos agresivos. Tu inicio de sesión es totalmente humano y las cookies se guardan de forma instantánea y segura.
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn bs" onclick="cerrarModalFacebook()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL CONFIRMACIÓN PERSONALIZADA (OBSIDIAN DIALOG) ══════════════ -->
+<div class="custom-dialog-overlay" id="m-confirm-custom" style="display:none">
+  <div class="custom-dialog-card" role="dialog" aria-modal="true" aria-labelledby="m-confirm-titulo">
+    <div class="dialog-top-tag">
+      <span class="dialog-pulse-dot"></span>
+      <span id="m-confirm-tag">PURGA PERMANENTE DE DISCO</span>
+    </div>
+
+    <div class="dialog-hdr">
+      <div class="dialog-icon-box">
+        <img src="iconos/eliminar.svg" id="m-confirm-icon-img" class="icono-svg" alt="Peligro" />
+      </div>
+      <div class="dialog-title-group">
+        <div class="dialog-title" id="m-confirm-titulo">¿Eliminar Video y Metadatos JSON?</div>
+        <div class="dialog-sub" id="m-confirm-sub">Esta acción purgará físicamente el archivo original, todos los clips y la configuración JSON.</div>
+      </div>
+    </div>
+
+    <div class="dialog-target-box">
+      <div class="dialog-target-header">
+        <div class="dialog-target-icon"><img src="iconos/videos.svg" class="icono-svg-sm" /></div>
+        <div class="dialog-target-title" id="m-confirm-item-titulo">Título del video</div>
+      </div>
+      <div class="dialog-target-meta">
+        <span class="dialog-badge-id" id="m-confirm-item-id">ID: 073c1f4bd7b245bb</span>
+      </div>
+      <div class="dialog-detalles-list" id="m-confirm-detalles">
+        <!-- Inyectado dinámicamente -->
+      </div>
+    </div>
+
+    <div class="dialog-alert-note">
+      <img src="iconos/alerta.svg" class="icono-svg-sm" />
+      <span id="m-confirm-nota">El espacio en disco se liberará de inmediato. Esta acción no se puede deshacer.</span>
+    </div>
+
+    <div class="dialog-footer">
+      <button type="button" class="btn-dialog-cancel" id="m-confirm-btn-cancel">
+        Cancelar <kbd class="dialog-kbd">Esc</kbd>
+      </button>
+      <button type="button" class="btn-dialog-danger" id="m-confirm-btn-action">
+        <img src="iconos/eliminar.svg" class="icono-svg-sm" /> Eliminar Permanentemente
+      </button>
+    </div>
+  </div>
+</div>
+
+<div class="tc" id="tc"></div>
+
+<!-- ══════════════ JAVASCRIPT ══════════════ -->
+<script src="logica_panel.js?v=20261004"></script>
+</body>
+</html>
+
