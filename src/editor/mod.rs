@@ -14,6 +14,7 @@ pub struct EditorVideo {
     pub duracion_min_seg: u32,
     pub duracion_max_seg: u32,
     pub bin_ffmpeg: PathBuf,
+    pub corte_exacto: bool,
 }
 
 #[derive(Debug, Clone)]
@@ -25,12 +26,12 @@ pub struct Segmento {
 
 impl EditorVideo {
     pub fn new(duracion_min_seg: u32, duracion_max_seg: u32) -> Self {
+        Self::new_con_opciones(duracion_min_seg, duracion_max_seg, false)
+    }
+
+    pub fn new_con_opciones(duracion_min_seg: u32, duracion_max_seg: u32, corte_exacto: bool) -> Self {
         let bin_ffmpeg = Self::resolver_binario_ffmpeg();
-        Self {
-            duracion_min_seg,
-            duracion_max_seg,
-            bin_ffmpeg,
-        }
+        Self { duracion_min_seg, duracion_max_seg, bin_ffmpeg, corte_exacto }
     }
 
     /// Resuelve la ruta al ejecutable FFmpeg en el sistema o en los directorios conocidos.
@@ -135,20 +136,22 @@ impl EditorVideo {
             tokio::fs::create_dir_all(parent).await?;
         }
 
-        let output = tokio::process::Command::new(&self.bin_ffmpeg)
-            .arg("-y")
+        let mut cmd = tokio::process::Command::new(&self.bin_ffmpeg);
+        cmd.arg("-y")
             .arg("-ss")
             .arg(format!("{:.3}", segmento.inicio_seg))
             .arg("-i")
             .arg(ruta_entrada)
             .arg("-t")
-            .arg(format!("{:.3}", segmento.duracion_seg))
-            .arg("-c:v")
-            .arg("copy")
-            .arg("-c:a")
-            .arg("copy")
-            .arg("-avoid_negative_ts")
-            .arg("make_zero")
+            .arg(format!("{:.3}", segmento.duracion_seg));
+
+        if self.corte_exacto {
+            cmd.args(["-c:v", "libx264", "-preset", "veryfast", "-crf", "22", "-c:a", "aac", "-b:a", "128k"]);
+        } else {
+            cmd.args(["-c:v", "copy", "-c:a", "copy", "-avoid_negative_ts", "make_zero"]);
+        }
+
+        let output = cmd
             .arg("-fflags")
             .arg("+genpts")
             .arg("-movflags")

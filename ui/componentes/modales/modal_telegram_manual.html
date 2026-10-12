@@ -1,0 +1,47 @@
+<div class="mover" id="m-telegram-manual">
+  <div class="modal">
+    <div class="mhdr"><div class="mtitle"><img src="iconos/telegram.svg" class="icono-svg" /> Selección Manual de Videos para Telegram HD (MTProto)</div><button class="mclose" onclick="cerrarModal('m-telegram-manual')">✕</button></div>
+    <div class="mbody">
+      <p class="modal-desc">Elige el canal objetivo y selecciona por número o casillas los videos que deseas publicar uno por uno a través de MTProto nativo en Rust.</p>
+      
+      <div class="fg">
+        <label class="fl">Canal Objetivo de Telegram</label>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <select id="m-tg-canal-select" class="fsel" onchange="seleccionarCanalModalManual(this.value)">
+            <option value="">-- Elegir canal guardado --</option>
+          </select>
+          <div class="flex-gap-6-m2">
+            <input type="text" id="m-tg-canal-input" class="fi" placeholder="O ingresa uno nuevo (ej: @canal)" value="" />
+            <button class="btn bp bsm btn-telegram" onclick="guardarCanalTelegramModal()"><img src="iconos/guardar.svg" class="icono-svg-sm" /> Guardar Canal</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Protocolo y Motor de Transferencia Telegram MTProto -->
+      <div class="fg">
+        <label class="fl"><img src="iconos/telegram.svg" class="icono-svg-sm" style="margin-right:6px;vertical-align:middle" />Motor de Transferencia</label>
+        <div class="fi" style="background:var(--bg1);display:flex;align-items:center;gap:8px;color:var(--txt1);font-size:12px;cursor:default">
+          <span style="color:#2ea043;font-weight:bold">●</span>
+          <span>MTProto Nativo Puro (grammers_client Rust — Socket Criptográfico)</span>
+        </div>
+      </div>
+
+      <div class="fg">
+        <label class="fl">Selección por Números (Separados por coma, ej: 1, 2, 5, 8)</label>
+        <input type="text" id="m-tg-numeros-input" class="fi" placeholder="Ej: 1, 2, 3 o 1, 5, 8..." oninput="filtrarCasillasPorNumeros(this.value)" />
+      </div>
+
+      <div class="fg">
+        <label class="fl">Lista de Videos Disponibles en Biblioteca</label>
+        <div id="m-tg-lista-videos" style="max-height:220px;overflow-y:auto;background:var(--bg1);border:1px solid var(--border);border-radius:6px;padding:8px;display:flex;flex-direction:column;gap:6px">
+          <!-- Lista generada dinámicamente con checkboxes numerados #1, #2, #3... -->
+        </div>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn bs" onclick="cerrarModal('m-telegram-manual')">Cancelar</button>
+      <button class="btn bp btn-telegram" onclick="publicarSeleccionTelegramModal()"><img src="iconos/telegram.svg" class="icono-svg-sm" /> Iniciar Publicación Cautelosa</button>
+    </div>
+  </div>
+</div>
+

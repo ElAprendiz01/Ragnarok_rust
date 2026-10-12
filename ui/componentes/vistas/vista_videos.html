@@ -1,0 +1,29 @@
+    <div id="pg-videos" style="display:none">
+      <div class="fu">
+        <div class="sh">
+          <span class="st">Biblioteca de Videos Descargados</span>
+          <div class="flex-gap-8" style="flex-wrap:wrap;align-items:center">
+            <select class="fsel sel-filter" id="gal-filter" style="width:auto" onchange="cambiarFiltroEstado(this.value)">
+              <option value="all">Todos los estados</option>
+              <option value="descargado">Descargados</option>
+              <option value="editado">Editados</option>
+              <option value="publicado">Publicados</option>
+            </select>
+            <button class="btn bs bsm" id="btn-filtro-hoy-gal" onclick="toggleFiltroHoy()"><img src="iconos/pipeline.svg" class="icono-svg-sm" /> Descargados Hoy</button>
+            <select class="fsel" id="gal-sort" style="width:auto" onchange="cambiarOrdenVideos(this.value)">
+              <option value="recientes">Más recientes</option>
+              <option value="antiguos">Más antiguos</option>
+            </select>
+            <button class="btn bp bsm" onclick="ejecutarFase(1)"><img src="iconos/descargar.svg" class="icono-svg-sm" /> Descargar Más</button>
+          </div>
+        </div>
+        <!-- Etiqueta de Filtros Activos (Galería) -->
+        <div id="gal-filtro-tags" style="display:none;align-items:center;gap:8px;margin-bottom:12px;font-size:11px;padding:6px 12px;background:rgba(255,255,255,0.03);border:1px solid var(--border);border-radius:6px">
+          <span style="color:var(--txt3)">Filtros activos:</span>
+          <span class="tbadge actv" id="gal-filtro-badge">Todos</span>
+          <button class="btn bd bsm" style="padding:2px 8px;font-size:10px;height:auto" onclick="limpiarTodosFiltros()"><img src="iconos/eliminar.svg" class="icono-svg-sm" style="width:10px;height:10px" /> Mostrar todos</button>
+        </div>
+        <div class="gallery-grid" id="gallery-grid"></div>
+      </div>
+    </div>
+

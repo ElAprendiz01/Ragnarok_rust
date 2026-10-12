@@ -11,12 +11,11 @@ mod storage;
 use std::net::SocketAddr;
 use std::path::{Path, PathBuf};
 use axum::{
-    response::{Html, IntoResponse},
     routing::get,
     Router,
 };
 use tower_http::cors::CorsLayer;
-use tower_http::services::ServeDir;
+use tower_http::services::{ServeDir, ServeFile};
 use tracing::info;
 
 use state::AppState;
@@ -58,14 +57,22 @@ async fn main() -> anyhow::Result<()> {
     let ui_path = resolver_ui_path(&ruta_base);
     let state = AppState::new(ruta_base.clone(), cfg);
 
-    // Construir Router Modular con todas las rutas y servicios
+    // Inicializar verificación asíncrona de sesión Telegram (no bloqueante)
+    let state_tg = state.clone();
+    tokio::spawn(async move {
+        api::telegram_auth::verificar_autorizacion_inicial(state_tg).await;
+    });
+
+    // Construir Router Modular con servicios de archivos estáticos de alto rendimiento (ServeFile/ServeDir)
     let api_router = api::crear_router(state.clone());
     let app = Router::new()
-        .route("/", get(servir_index))
-        .route("/estilos_panel.css", get(servir_css))
-        .route("/logica_panel.js", get(servir_js))
+        .route_service("/", ServeFile::new(ui_path.join("panel_control.html")))
+        .route_service("/estilos_panel.css", ServeFile::new(ui_path.join("estilos_panel.css")))
+        .route_service("/logica_panel.js", ServeFile::new(ui_path.join("logica_panel.js")))
         .route("/favicon.ico", get(|| async { axum::http::StatusCode::NO_CONTENT }))
         .nest_service("/iconos", ServeDir::new(ui_path.join("iconos")))
+        .nest_service("/js", ServeDir::new(ui_path.join("js")))
+        .nest_service("/componentes", ServeDir::new(ui_path.join("componentes")))
         .merge(api_router)
         .fallback_service(ServeDir::new(&ui_path))
         .layer(CorsLayer::permissive());
@@ -85,54 +92,3 @@ async fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-async fn servir_index() -> impl IntoResponse {
-    let ruta_actual = std::env::current_dir().unwrap_or_default();
-    let ui_path = resolver_ui_path(&ruta_actual);
-    let ruta_html = ui_path.join("panel_control.html");
-
-    if let Ok(contenido) = tokio::fs::read_to_string(&ruta_html).await {
-        (
-            [
-                (axum::http::header::CONTENT_TYPE, "text/html; charset=utf-8"),
-                (axum::http::header::CACHE_CONTROL, "no-cache, no-store, must-revalidate"),
-            ],
-            contenido,
-        ).into_response()
-    } else {
-        Html(format!("<h1>Error: panel_control.html no encontrado en {:?}</h1>", ruta_html)).into_response()
-    }
-}
-
-async fn servir_css() -> impl IntoResponse {
-    let ruta_actual = std::env::current_dir().unwrap_or_default();
-    let ui_path = resolver_ui_path(&ruta_actual);
-    let archivo = ui_path.join("estilos_panel.css");
-    if let Ok(c) = tokio::fs::read_to_string(archivo).await {
-        (
-            [
-                (axum::http::header::CONTENT_TYPE, "text/css; charset=utf-8"),
-                (axum::http::header::CACHE_CONTROL, "no-cache, no-store, must-revalidate"),
-            ],
-            c,
-        ).into_response()
-    } else {
-        axum::http::StatusCode::NOT_FOUND.into_response()
-    }
-}
-
-async fn servir_js() -> impl IntoResponse {
-    let ruta_actual = std::env::current_dir().unwrap_or_default();
-    let ui_path = resolver_ui_path(&ruta_actual);
-    let archivo = ui_path.join("logica_panel.js");
-    if let Ok(c) = tokio::fs::read_to_string(archivo).await {
-        (
-            [
-                (axum::http::header::CONTENT_TYPE, "application/javascript; charset=utf-8"),
-                (axum::http::header::CACHE_CONTROL, "no-cache, no-store, must-revalidate"),
-            ],
-            c,
-        ).into_response()
-    } else {
-        axum::http::StatusCode::NOT_FOUND.into_response()
-    }
-}

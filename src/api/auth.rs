@@ -12,12 +12,11 @@ use crate::state::AppState;
 pub async fn estado_cookies(State(state): State<Arc<AppState>>) -> Json<Value> {
     let dir_config = state.ruta_base.join("config");
     let dir_persist = state.ruta_base.join("datos_persistencia");
-    let dir_tg_perfil = dir_persist.join("perfil_telegram");
     let tg_session = dir_persist.join("telegram.session");
     let dir_fb_perfil = dir_persist.join("perfil_facebook_chromium");
     let fb_cookies_path = dir_config.join("cookies_facebook.json");
 
-    let tg_ok = tg_session.exists() || dir_tg_perfil.exists() || dir_config.join("cookies_telegram.json").exists();
+    let tg_ok = tg_session.exists() || state.telegram_autorizado.load(std::sync::atomic::Ordering::Relaxed);
 
     let (fb_ok, fb_user) = if fb_cookies_path.exists() {
         if let Ok(contenido) = std::fs::read_to_string(&fb_cookies_path) {
@@ -59,7 +58,7 @@ pub async fn estado_cookies(State(state): State<Arc<AppState>>) -> Json<Value> {
             "telegram": {
                 "conectado": tg_ok,
                 "estado": if tg_ok { "ACTIVO" } else { "PENDIENTE" },
-                "mensaje": if tg_ok { "Sesión MTProto / Web Activa" } else { "Sin sesión vinculada" }
+                "mensaje": if tg_ok { "Sesión MTProto Nativa Activa" } else { "Sin sesión vinculada" }
             },
             "facebook": {
                 "conectado": fb_ok,

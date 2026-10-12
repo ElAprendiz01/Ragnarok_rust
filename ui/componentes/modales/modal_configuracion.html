@@ -1,0 +1,93 @@
+<div class="mover" id="m-config">
+  <div class="modal">
+    <div class="mhdr"><div class="mtitle"><img src="iconos/config.svg" class="icono-svg" /> Configuración del Sistema</div><button class="mclose" onclick="cerrarModal('m-config')">✕</button></div>
+    <div class="mbody">
+      <div class="grid-2col">
+        <div class="fg"><label class="fl">Máx. Scrolls por Sesión</label><input type="number" class="fi" id="cfg-max-scrolls" value="50" /></div>
+        <div class="fg"><label class="fl">Factor de Velocidad</label><select class="fsel" id="cfg-velocidad"><option value="1.0">1.0x (Normal)</option><option value="1.25">1.25x (Rápido)</option><option value="1.5">1.50x (Muy rápido)</option></select></div>
+      </div>
+      <div class="grid-2col">
+        <div class="fg"><label class="fl">Duración Bloque (min)</label><input type="number" class="fi" id="cfg-dur-bloque" value="8" /></div>
+        <div class="fg"><label class="fl">Hilos FFmpeg</label><input type="number" class="fi" id="cfg-threads" value="4" /></div>
+      </div>
+      <div class="fg">
+        <label class="fl">Modo Navegador Chromium (Facebook CDP)</label>
+        <select class="fsel" id="cfg-headless">
+          <option value="false">Visible (Navegador en ventana gráfica)</option>
+          <option value="true">Headless (Navegador oculto en segundo plano)</option>
+        </select>
+      </div>
+
+      <!-- Sección Telegram MTProto Nativo -->
+      <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid var(--bdr, #2a2e39);">
+        <div style="font-weight: 600; font-size: 13px; color: #4da6ff; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between;">
+          <div style="display: flex; align-items: center; gap: 6px;">
+            <img src="iconos/telegram.svg" class="icono-svg-sm" /> Telegram MTProto (Subida Directa Sin Navegadores)
+          </div>
+          <div id="tg-session-status-badge">
+            <span id="tg-status-text" style="font-size: 11px; padding: 3px 8px; border-radius: 12px; background: rgba(255,255,255,0.06); color: var(--tx-dim, #8b949e);">
+              <span style="color: #888;">●</span> Sin sesión
+            </span>
+          </div>
+        </div>
+
+        <div class="grid-2col">
+          <div class="fg">
+            <label class="fl">Telegram App api_id</label>
+            <input type="number" class="fi" id="cfg-tg-api-id" placeholder="Ej: 28471928" />
+          </div>
+          <div class="fg">
+            <label class="fl">Telegram App api_hash</label>
+            <input type="text" class="fi" id="cfg-tg-api-hash" placeholder="Ej: a1b2c3d4e5f6..." />
+          </div>
+        </div>
+
+        <div class="grid-2col">
+          <div class="fg">
+            <label class="fl">Canal Objetivo Telegram</label>
+            <input type="text" class="fi" id="cfg-tg-canal" placeholder="@tu_canal" />
+          </div>
+          <div class="fg">
+            <label class="fl">Teléfono registrado en la API (+código de país)</label>
+            <input type="text" class="fi" id="cfg-tg-phone" placeholder="Ej: +521234567890" />
+          </div>
+        </div>
+
+        <!-- Acciones de Vinculación en Vivo -->
+        <div style="margin-top: 12px; display: flex; align-items: center; justify-content: flex-end; gap: 8px;">
+          <button type="button" class="btn bs" id="btn-tg-desvincular" onclick="desvincularTelegram()" style="display: none; color: #f85149; border-color: rgba(248,81,73,0.3);">
+            Desvincular Sesión
+          </button>
+          <button type="button" class="btn bp" id="btn-tg-solicitar" onclick="solicitarCodigoTelegram()" style="font-size: 12px; padding: 6px 14px;">
+            <img src="iconos/telegram.svg" class="icono-svg-sm" /> Solicitar Código a Telegram
+          </button>
+        </div>
+
+        <!-- Caja de Verificación de Código SMS / App -->
+        <div id="tg-code-box" style="display: none; margin-top: 12px; padding: 12px; background: rgba(77, 166, 255, 0.08); border: 1px solid rgba(77, 166, 255, 0.4); border-radius: 8px;">
+          <label class="fl" style="color: #4da6ff; margin-bottom: 6px; font-weight: 600;">Código de 5 dígitos recibido en Telegram:</label>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="text" class="fi" id="cfg-tg-code" placeholder="12345" maxlength="8" style="max-width: 140px; font-size: 16px; font-weight: bold; letter-spacing: 3px; text-align: center;" />
+            <button type="button" class="btn bp" onclick="confirmarCodigoTelegram()" style="padding: 6px 16px;">Verificar y Vincular</button>
+          </div>
+          <div style="font-size: 11px; margin-top: 6px; color: var(--tx-dim, #8b949e);">Revisa el chat de servicio oficial de Telegram en tu teléfono o PC e ingresa el código.</div>
+        </div>
+
+        <!-- Caja de Contraseña 2FA si aplica -->
+        <div id="tg-2fa-box" style="display: none; margin-top: 12px; padding: 12px; background: rgba(245, 166, 35, 0.08); border: 1px solid rgba(245, 166, 35, 0.4); border-radius: 8px;">
+          <label class="fl" style="color: #f5a623; margin-bottom: 4px; font-weight: 600;">Tu cuenta tiene Verificación en 2 Pasos (2FA activa en Telegram):</label>
+          <div style="font-size: 11px; margin-bottom: 8px; color: var(--tx-dim, #8b949e); line-height: 1.4;">
+            Telegram detectó que tu cuenta tiene una contraseña de seguridad en la nube (configurada en tu app móvil en: <em>Ajustes ➔ Privacidad y Seguridad ➔ Verificación en dos pasos</em>).
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <input type="password" class="fi" id="cfg-tg-2fa" placeholder="Tu contraseña 2FA de Telegram" style="flex: 1;" />
+            <button type="button" class="btn bs" onclick="toggleVerPassword2FA()" style="padding: 6px 10px; font-size: 12px;" title="Mostrar / Ocultar">👁️</button>
+            <button type="button" class="btn bp" id="btn-tg-2fa-confirmar" onclick="confirmarPasswordTelegram()" style="padding: 6px 16px;">Confirmar Contraseña</button>
+          </div>
+          <div id="tg-2fa-error-msg" style="display: none; font-size: 11px; margin-top: 8px; color: #f85149; font-weight: 500;"></div>
+        </div>
+      </div>
+    </div>
+    <div class="mfoot"><button class="btn bs" onclick="cerrarModal('m-config')">Cancelar</button><button class="btn bp" onclick="guardarConfig()"><img src="iconos/guardar.svg" class="icono-svg-sm" /> Guardar Configuración</button></div>
+  </div>
+</div>

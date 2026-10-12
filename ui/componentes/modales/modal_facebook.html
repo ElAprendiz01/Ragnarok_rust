@@ -1,0 +1,84 @@
+<div class="mover" id="m-facebook-auth">
+  <div class="modal" style="max-width: 580px;">
+    <div class="mhdr">
+      <div class="mtitle"><img src="iconos/facebook.svg" class="icono-svg" /> Iniciar / Gestionar Sesión de Facebook</div>
+      <button class="mclose" onclick="cerrarModalFacebook()">✕</button>
+    </div>
+    <div class="mbody">
+      <!-- Estado de Sesión en Vivo -->
+      <div style="background:var(--bg1);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:14px;display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div style="font-size:11px;color:var(--txt3);text-transform:uppercase;letter-spacing:0.5px;font-weight:700">Estado de Cuenta Facebook</div>
+          <div id="fb-modal-status-text" style="font-size:14px;font-weight:700;color:var(--txt1);margin-top:2px">Verificando sesión...</div>
+        </div>
+        <span id="fb-modal-badge" class="tbadge pend">Verificando</span>
+      </div>
+
+      <!-- MÉTODO 1 (SUPER SENCILLO Y 100% SEGURO): Iniciar Sesión en Navegador Asistido -->
+      <div style="background:var(--bg2);border:1px solid rgba(0,212,255,0.4);border-radius:8px;padding:16px;margin-bottom:14px">
+        <div style="font-weight:700;font-size:13px;color:var(--txt1);display:flex;align-items:center;gap:8px;margin-bottom:6px">
+          <span style="background:rgba(0,212,255,0.15);color:var(--cyan);border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:bold">1</span>
+          Iniciar Sesión Manual en Navegador (Recomendado)
+        </div>
+        <p style="font-size:11px;color:var(--txt2);margin-bottom:12px;line-height:1.4">
+          Abre el navegador con tu perfil seguro. Podrás iniciar sesión con tu usuario y contraseña con total tranquilidad (<strong>sin bots ni rastreadores automáticos que bloqueen tu cuenta</strong>). Cuando estés dentro, solo pulsa <em>"Guardar y Vincular Sesión"</em>.
+        </p>
+
+        <!-- Estado cuando el navegador está cerrado -->
+        <div id="fb-nav-cerrado-box" style="display:block">
+          <button type="button" class="btn bp" id="btn-abrir-fb-nav" onclick="abrirNavegadorFacebook()" style="width:100%;padding:10px;font-size:13px;display:flex;align-items:center;justify-content:center;gap:8px">
+            <img src="iconos/facebook.svg" class="icono-svg-sm" /> 🚀 Abrir Navegador para Iniciar Sesión
+          </button>
+        </div>
+
+        <!-- Estado cuando el navegador está abierto en pantalla -->
+        <div id="fb-nav-abierto-box" style="display:none;background:rgba(0,212,255,0.06);border:1px dashed var(--cyan);border-radius:6px;padding:12px;text-align:center">
+          <div style="display:flex;align-items:center;justify-content:center;gap:8px;font-size:12px;color:var(--cyan);font-weight:600;margin-bottom:8px">
+            <span class="live-dot" style="background:var(--cyan)"></span>
+            Ventana de Navegador abierta en pantalla
+          </div>
+          <p style="font-size:11px;color:var(--txt3);margin-bottom:12px;line-height:1.4">
+            Escribe tus credenciales e inicia sesión en la ventana de Facebook. Cuando veas tu muro o perfil, pulsa el botón verde para guardar la sesión:
+          </p>
+          <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+            <button type="button" class="btn bp" id="btn-capturar-fb-sesion" onclick="capturarSesionFacebook()" style="background:linear-gradient(135deg,#22d3a0,#10b981);color:#0a0f1d;font-weight:700;padding:10px 16px;border:none">
+              <img src="iconos/check.svg" class="icono-svg-sm" /> ✅ Ya entré a mi cuenta — Guardar y Vincular Sesión
+            </button>
+            <button type="button" class="btn bd bsm" onclick="cerrarNavegadorFacebookManual()" title="Cerrar ventana">
+              <img src="iconos/eliminar.svg" class="icono-svg-sm" /> Cancelar / Cerrar Navegador
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MÉTODO 2 (OPCIONAL / AVANZADO): Pegar Cookies JSON Colapsable -->
+      <details style="background:var(--bg1);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin-bottom:14px">
+        <summary style="font-size:11px;font-weight:600;color:var(--txt2);cursor:pointer;user-select:none">
+          Opciones avanzadas: Pegar Cookies JSON manualmente
+        </summary>
+        <div style="margin-top:10px">
+          <p style="font-size:11px;color:var(--txt3);margin-bottom:6px">
+            Si prefieres exportar cookies con una extensión desde otro navegador, pégalas aquí en formato JSON:
+          </p>
+          <textarea class="fi" id="fb-cookies-json-input" rows="3" placeholder='[{"name":"c_user","value":"1000..."}, ...]' style="font-family:var(--mono);font-size:11px;resize:vertical"></textarea>
+          <div style="display:flex;justify-content:flex-end;margin-top:8px">
+            <button type="button" class="btn bp bsm" onclick="guardarCookiesFacebookManual()"><img src="iconos/guardar.svg" class="icono-svg-sm" /> Guardar JSON</button>
+          </div>
+        </div>
+      </details>
+
+      <!-- Garantía Anti-Bloqueos -->
+      <div style="background:rgba(34,211,160,0.06);border:1px solid rgba(34,211,160,0.25);border-radius:8px;padding:10px 12px;font-size:11px;color:var(--txt2);line-height:1.4">
+        <div style="font-weight:700;color:var(--green);margin-bottom:2px;display:flex;align-items:center;gap:6px">
+          <img src="iconos/check.svg" class="icono-svg-sm" /> 100% Protegido contra bloqueos de Meta:
+        </div>
+        El navegador utiliza tu propio perfil persistente sin sondeos agresivos. Tu inicio de sesión es totalmente humano y las cookies se guardan de forma instantánea y segura.
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn bs" onclick="cerrarModalFacebook()">Cerrar</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════ MODAL CONFIRMACIÓN PERSONALIZADA (OBSIDIAN DIALOG) ══════════════ -->

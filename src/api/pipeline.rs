@@ -7,17 +7,21 @@ use serde_json::{json, Value};
 
 use crate::crawler::GestorExtraccion;
 use crate::editor::EditorVideo;
-use crate::state::AppState;
+use crate::state::{AppState, FaseGuard};
 use crate::storage::GestorAlmacenamiento;
 
 pub async fn obtener_estado(State(state): State<Arc<AppState>>) -> Json<Value> {
-    let pipeline = state.estado_pipeline.read().await;
+    let pipeline = state.estado_pipeline.read().await.clone();
 
     let dir_persist = state.ruta_base.join("datos_persistencia");
-    let cant_fuentes = GestorAlmacenamiento::contar_lineas(&dir_persist.join("fuentes_url.txt"));
-    let cant_completados = GestorAlmacenamiento::contar_lineas(&dir_persist.join("enlaces_completados.txt"));
-    let cant_pendientes = GestorAlmacenamiento::contar_lineas(&dir_persist.join("cola_pendientes.txt"));
-    let cant_historial = GestorAlmacenamiento::contar_lineas(&dir_persist.join("historial_global_enlaces.txt"));
+    let (cant_fuentes, cant_completados, cant_pendientes, cant_historial) = tokio::task::spawn_blocking(move || {
+        (
+            GestorAlmacenamiento::contar_lineas(&dir_persist.join("fuentes_url.txt")),
+            GestorAlmacenamiento::contar_lineas(&dir_persist.join("enlaces_completados.txt")),
+            GestorAlmacenamiento::contar_lineas(&dir_persist.join("cola_pendientes.txt")),
+            GestorAlmacenamiento::contar_lineas(&dir_persist.join("historial_global_enlaces.txt")),
+        )
+    }).await.unwrap_or((0, 0, 0, 0));
 
     Json(json!({
         "fases": {
@@ -52,8 +56,11 @@ pub async fn ejecutar_fase(
             let state_clone = Arc::clone(&state);
             let base = state.ruta_base.clone();
             tokio::spawn(async move {
+                let mut guard = FaseGuard::nuevo(1, state_clone.clone());
                 if let Err(e) = GestorExtraccion::ejecutar_fase_1_completa(&base, state_clone).await {
                     tracing::error!("Error en Fase 1: {:?}", e);
+                } else {
+                    guard.finalizar_con_exito();
                 }
             });
         }
@@ -77,6 +84,7 @@ pub async fn ejecutar_fase(
             let dir_procesados = state.ruta_base.join("procesados");
 
             tokio::spawn(async move {
+                let mut guard = FaseGuard::nuevo(2, state_clone.clone());
                 if let Err(e) = EditorVideo::ejecutar_fase_2_completa(
                     &dir_descargas,
                     &dir_procesados,
@@ -85,6 +93,8 @@ pub async fn ejecutar_fase(
                     state_clone,
                 ).await {
                     tracing::error!("Error en Fase 2: {:?}", e);
+                } else {
+                    guard.finalizar_con_exito();
                 }
             });
         }
@@ -106,12 +116,13 @@ pub async fn ejecutar_fase(
             let state_clone = Arc::clone(&state);
             let base = state.ruta_base.clone();
             tokio::spawn(async move {
+                let mut guard = FaseGuard::nuevo(1, state_clone.clone());
                 let dir_descargas = base.join("descargas");
                 if let Err(e) = crate::downloader::GestorDescargas::procesar_cola_pendientes(&dir_descargas, state_clone.clone()).await {
                     tracing::error!("Error descargando pendientes: {:?}", e);
+                } else {
+                    guard.finalizar_con_exito();
                 }
-                let mut p = state_clone.estado_pipeline.write().await;
-                p.fase_1 = "idle".to_string();
             });
         }
         _ => return Json(json!({"ok": false, "error": "Fase no válida"})),

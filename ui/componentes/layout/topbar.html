@@ -1,0 +1,12 @@
+  <header class="topbar">
+    <div class="top-title">Ragnarok — <span id="pg-title">Dashboard</span></div>
+    <div class="top-sp"></div>
+    <!-- Indicador de servidor -->
+    <div id="srv-indicator" class="srv-ind" title="Servidor Ragnarok en http://127.0.0.1:5757">
+      <span id="srv-dot" class="srv-dot-icon"></span>
+      <span id="srv-txt">Conectando...</span>
+    </div>
+    <span id="sys-badge" class="sbadge idle"><span class="sdot" id="sys-dot"></span><span id="sys-txt">Sistema inactivo</span></span>
+    <button class="bico" title="Refrescar" onclick="refrescar()"><img src="iconos/refrescar.svg" class="icono-svg" alt="Refrescar" /></button>
+    <button class="bico" title="Estudio de Reproducción" onclick="navTo('estudio',document.getElementById('nav-estudio'))"><img src="iconos/estudio.svg" class="icono-svg" alt="Estudio" /></button>
+    <button class="bico" title="Logs" onclick="navTo('dash',document.getElementById('nav-dash'))"><img src="iconos/logs.svg" class="icono-svg" alt="Logs" /></button>

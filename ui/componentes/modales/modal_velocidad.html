@@ -1,0 +1,15 @@
+<div class="mover" id="m-vel">
+  <div class="modal modal-sm">
+    <div class="mhdr"><div class="mtitle"><img src="iconos/pipeline.svg" class="icono-svg" /> Velocidad de Procesamiento</div><button class="mclose" onclick="cerrarModal('m-vel')">✕</button></div>
+    <div class="mbody">
+      <p class="modal-desc">Velocidades > 1.0x requieren recodificación con GPU (NVENC/QSV). Velocidad 1.0x usa stream copy directo sin pérdida de calidad.</p>
+      <div class="flex-col-gap-8">
+        <label class="plci lbl-pointer"><input type="radio" name="vel" value="1.0" checked class="accent-cyan"><div><div class="vel-title">1.0x — Normal</div><div class="vel-sub">Stream copy. 0% CPU/RAM. Corte en ~1 segundo.</div></div></label>
+        <label class="plci lbl-pointer"><input type="radio" name="vel" value="1.25" class="accent-cyan"><div><div class="vel-title">1.25x — Rápido</div><div class="vel-sub">setpts=0.8*PTS + atempo=1.25. Encoder GPU.</div></div></label>
+        <label class="plci lbl-pointer"><input type="radio" name="vel" value="1.5" class="accent-cyan"><div><div class="vel-title">1.50x — Muy Rápido</div><div class="vel-sub">setpts=0.666*PTS + atempo=1.5. Encoder GPU.</div></div></label>
+      </div>
+    </div>
+    <div class="mfoot"><button class="btn bs" onclick="cerrarModal('m-vel')">Cancelar</button><button class="btn bp" onclick="aplicarVel()"><img src="iconos/check.svg" class="icono-svg-sm" /> Aplicar</button></div>
+  </div>
+</div>
+

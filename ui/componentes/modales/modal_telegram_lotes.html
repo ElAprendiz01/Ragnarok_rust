@@ -1,0 +1,74 @@
+<div class="mover" id="m-telegram-lotes">
+  <div class="modal">
+    <div class="mhdr">
+      <div class="mtitle"><img src="iconos/telegram.svg" class="icono-svg" /> Publicar Todo por Lote — Telegram HD</div>
+      <button class="mclose" onclick="cerrarModal('m-telegram-lotes')">✕</button>
+    </div>
+    <div class="mbody">
+      <p class="modal-desc">
+        Se creará una cola temporal en disco para procesar todos los videos uno a uno de forma secuencial, garantizando bajo consumo de memoria RAM y enviando directamente los archivos por MTProto nativo sin navegador.
+      </p>
+
+      <div class="fg">
+        <label class="fl">Canal Objetivo de Telegram</label>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <select id="m-tg-lote-canal-select" class="fsel" onchange="seleccionarCanalModalLote(this.value)">
+            <option value="">-- Elegir canal guardado --</option>
+          </select>
+          <div class="flex-gap-6-m2">
+            <input type="text" id="m-tg-lote-canal" class="fi" placeholder="O ingresa uno nuevo (ej: @canal)" value="" />
+            <button class="btn bp bsm btn-telegram" onclick="guardarCanalTelegramModalLote()"><img src="iconos/guardar.svg" class="icono-svg-sm" /> Guardar Canal</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Protocolo y Motor de Transferencia Telegram MTProto -->
+      <div class="fg">
+        <label class="fl"><img src="iconos/telegram.svg" class="icono-svg-sm" style="margin-right:6px;vertical-align:middle" />Motor de Transferencia</label>
+        <div class="fi" style="background:var(--bg1);display:flex;align-items:center;gap:8px;color:var(--txt1);font-size:12px;cursor:default">
+          <span style="color:#2ea043;font-weight:bold">●</span>
+          <span>MTProto Nativo Puro (grammers_client Rust — Zero-RAM, Sin Navegador)</span>
+        </div>
+        <div style="font-size:11px;color:var(--txt3);margin-top:4px">
+          Transmisión directa por sockets binarios TCP oficiales. No requiere Chromium ni consume memoria gráfica.
+        </div>
+      </div>
+
+      <!-- Modo de Video: Original HD Completo vs Clips Segmentados -->
+      <div class="fg">
+        <label class="fl">Formato de Contenido a Publicar</label>
+        <select id="m-tg-lote-modo-video" class="fsel">
+          <option value="completo" selected>Videos Completos Originales (HD desde /descargas)</option>
+          <option value="clips">Clips / Segmentos Recortados (desde /procesados)</option>
+        </select>
+      </div>
+
+      <!-- Info de rendimiento y videos detectados -->
+      <div class="dialog-target-box" style="margin-bottom:0">
+        <div class="flex-between">
+          <span style="font-size:12px;color:var(--txt2)">Videos en biblioteca:</span>
+          <span id="m-tg-lote-cant-videos" style="font-family:var(--mono);font-size:12px;color:var(--cyan);font-weight:700">Calculando...</span>
+        </div>
+        <div style="font-size:11px;color:var(--txt3);line-height:1.4;margin-top:4px">
+          Arquitectura Zero-RAM: Streaming directo por chunks de 512KB leídos del disco; no satura la memoria ni bloquea hilos de CPU.
+        </div>
+      </div>
+
+      <!-- Control de Resubida o Reanudación -->
+      <div class="fg" style="margin-top:10px">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--txt2);user-select:none">
+          <input type="checkbox" id="m-tg-lote-forzar" style="accent-color:var(--cyan);cursor:pointer" />
+          <span><strong>Forzar resubida completa</strong> (Ignorar completados y subir de nuevo)</span>
+        </label>
+        <div style="font-size:11px;color:var(--txt3);margin-top:3px;margin-left:22px">
+          Desmarcado por defecto: Reanuda automáticamente solo videos pendientes o fallidos, evitando duplicados en Telegram.
+        </div>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn bs" onclick="cerrarModal('m-telegram-lotes')">Cancelar</button>
+      <button class="btn bd" id="btn-modal-detener-lote" style="display:none;background:rgba(239,68,68,0.2);color:var(--red);border:1px solid rgba(239,68,68,0.4)" onclick="detenerLoteTelegram()"><img src="iconos/eliminar.svg" class="icono-svg-sm" /> Detener Lote Activo</button>
+      <button class="btn bp btn-telegram" id="btn-iniciar-lote-tg" onclick="iniciarPublicacionLoteTelegram()"><img src="iconos/telegram.svg" class="icono-svg-sm" /> Iniciar Publicación por Lote</button>
+    </div>
+  </div>
+</div>

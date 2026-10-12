@@ -25,38 +25,52 @@ pub struct ConfirmarPasswordPayload {
     pub password: String,
 }
 
-/// Consulta si existe una sesión válida de Telegram guardada en disco.
+/// Consulta si existe una sesión válida de Telegram guardada (<1 ms, lectura en memoria).
 pub async fn estado_sesion(State(state): State<Arc<AppState>>) -> Json<Value> {
     let ruta_sesion = state.ruta_base.join("datos_persistencia").join("telegram.session");
     let existe = ruta_sesion.exists();
-    let mut activo = false;
-
-    if existe {
-        if let Ok(session) = Session::load_file_or_create(&ruta_sesion) {
-            let (api_id, api_hash) = {
-                let cfg = state.config.read().await;
-                (cfg.publicacion.telegram_api_id, cfg.publicacion.telegram_api_hash.clone())
-            };
-            if let (Some(id), Some(hash)) = (api_id, api_hash) {
-                if let Ok(client) = Client::connect(Config {
-                    session,
-                    api_id: id as i32,
-                    api_hash: hash,
-                    params: Default::default(),
-                }).await {
-                    activo = client.is_authorized().await.unwrap_or(false);
-                }
-            }
-        }
-    }
+    let activo = existe && state.telegram_autorizado.load(std::sync::atomic::Ordering::SeqCst);
 
     Json(json!({
         "ok": true,
         "sesion_guardada": existe,
         "vinculado": activo,
-        "mensaje": if activo { "Sesión autorizada y activa" } else if existe { "Archivo de sesión presente pero no autorizado" } else { "Sin sesión vinculada" }
+        "mensaje": if activo {
+            "Sesión autorizada y activa"
+        } else if existe {
+            "Archivo de sesión presente pero no autorizado"
+        } else {
+            "Sin sesión vinculada"
+        }
     }))
 }
+
+/// Verifica de forma asíncrona y no bloqueante la sesión al iniciar la aplicación.
+pub async fn verificar_autorizacion_inicial(state: Arc<AppState>) {
+    let ruta_sesion = state.ruta_base.join("datos_persistencia").join("telegram.session");
+    if !ruta_sesion.exists() {
+        state.telegram_autorizado.store(false, std::sync::atomic::Ordering::SeqCst);
+        return;
+    }
+    if let Ok(session) = Session::load_file_or_create(&ruta_sesion) {
+        let (api_id, api_hash) = {
+            let cfg = state.config.read().await;
+            (cfg.publicacion.telegram_api_id, cfg.publicacion.telegram_api_hash.clone())
+        };
+        if let (Some(id), Some(hash)) = (api_id, api_hash) {
+            if let Ok(client) = Client::connect(Config {
+                session,
+                api_id: id as i32,
+                api_hash: hash,
+                params: Default::default(),
+            }).await {
+                let authed = client.is_authorized().await.unwrap_or(false);
+                state.telegram_autorizado.store(authed, std::sync::atomic::Ordering::SeqCst);
+            }
+        }
+    }
+}
+
 
 /// Solicita a Telegram el código oficial de inicio de sesión vía SMS o App.
 pub async fn solicitar_codigo(
@@ -191,6 +205,7 @@ pub async fn confirmar_codigo(
                 return Json(json!({"ok": false, "error": err_msg}));
             }
 
+            state.telegram_autorizado.store(true, std::sync::atomic::Ordering::SeqCst);
             state.emitir_log("OK", "¡Sesión de Telegram MTProto vinculada con éxito y guardada permanentemente!").await;
             Json(json!({
                 "ok": true,
@@ -210,7 +225,6 @@ pub async fn confirmar_codigo(
         Err(e) => {
             let err_msg = format!("Código incorrecto o expirado: {}", e);
             state.emitir_log("ERROR", &err_msg).await;
-            // Restaurar para que el usuario pueda corregir el código sin re-pedir si aún es válido
             *auth_guard = Some(TelegramAuthStage::AwaitingCode { client, token, telefono });
             Json(json!({"ok": false, "error": err_msg}))
         }
@@ -232,44 +246,33 @@ pub async fn confirmar_password(
 
     let (client, token, _telefono) = match auth_stage {
         Some(TelegramAuthStage::AwaitingPassword { client, token, telefono }) => (client, token, telefono),
-        _ => {
-            return Json(json!({
-                "ok": false,
-                "error": "No hay ningún desafío de contraseña 2FA pendiente. Puedes solicitar un nuevo código."
-            }));
-        }
+        _ => return Json(json!({"ok": false, "error": "No hay ningún desafío 2FA pendiente."})),
     };
 
     state.emitir_log("INFO", "Verificando contraseña 2FA con Telegram...").await;
 
-    let token_reintento = token.clone();
-    let client_reintento = client.clone();
-    let telefono_reintento = _telefono.clone();
+    let (token_reintento, client_reintento, telefono_reintento) = (token.clone(), client.clone(), _telefono.clone());
 
     match client.check_password(token, &password).await {
         Ok(_) => {
             let ruta_sesion = state.ruta_base.join("datos_persistencia").join("telegram.session");
             if let Err(e) = client.session().save_to_file(&ruta_sesion) {
-                let err_msg = format!("Contraseña correcta pero falló al guardar sesión en disco: {}", e);
+                let err_msg = format!("Contraseña correcta pero falló al guardar sesión: {}", e);
                 state.emitir_log("ERROR", &err_msg).await;
                 return Json(json!({"ok": false, "error": err_msg}));
             }
 
+            state.telegram_autorizado.store(true, std::sync::atomic::Ordering::SeqCst);
             state.emitir_log("OK", "¡Sesión 2FA de Telegram autorizada y guardada exitosamente!").await;
-            Json(json!({
-                "ok": true,
-                "vinculado": true,
-                "mensaje": "¡Sesión 2FA vinculada exitosamente!"
-            }))
+            Json(json!({"ok": true, "vinculado": true, "mensaje": "¡Sesión 2FA vinculada exitosamente!"}))
         }
         Err(e) => {
-            // Restaurar para que el usuario pueda volver a intentar escribir la contraseña correcta sin reiniciar todo el proceso
             *auth_guard = Some(TelegramAuthStage::AwaitingPassword {
                 client: client_reintento,
                 token: token_reintento,
                 telefono: telefono_reintento,
             });
-            let err_msg = format!("Contraseña 2FA incorrecta: {}. Por favor verifica tu contraseña e intenta de nuevo.", e);
+            let err_msg = format!("Contraseña 2FA incorrecta: {}. Intenta de nuevo.", e);
             state.emitir_log("ERROR", &err_msg).await;
             Json(json!({"ok": false, "error": err_msg}))
         }
@@ -286,9 +289,7 @@ pub async fn desvincular_sesion(State(state): State<Arc<AppState>>) -> Json<Valu
         let mut auth = state.auth_telegram.lock().await;
         *auth = None;
     }
+    state.telegram_autorizado.store(false, std::sync::atomic::Ordering::SeqCst);
     state.emitir_log("INFO", "Sesión de Telegram eliminada del sistema.").await;
-    Json(json!({
-        "ok": true,
-        "mensaje": "Sesión de Telegram desvinculada exitosamente."
-    }))
+    Json(json!({"ok": true, "mensaje": "Sesión de Telegram desvinculada exitosamente."}))
 }

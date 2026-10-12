@@ -36,6 +36,7 @@ pub struct AppState {
     pub auth_facebook_driver: tokio::sync::Mutex<Option<crate::crawler::chrome_driver::ChromeDriver>>,
     pub lock_publicacion_telegram: tokio::sync::Mutex<()>,
     pub cancelar_publicacion: std::sync::atomic::AtomicBool,
+    pub telegram_autorizado: std::sync::atomic::AtomicBool,
 }
 
 impl AppState {
@@ -50,6 +51,7 @@ impl AppState {
             auth_facebook_driver: tokio::sync::Mutex::new(None),
             lock_publicacion_telegram: tokio::sync::Mutex::new(()),
             cancelar_publicacion: std::sync::atomic::AtomicBool::new(false),
+            telegram_autorizado: std::sync::atomic::AtomicBool::new(false),
         })
     }
 
@@ -87,5 +89,47 @@ impl AppState {
         {
             let _ = archivo.write_all(linea.as_bytes()).await;
         }
+    }
+}
+
+/// Guardián RAII para garantizar la liberación segura de fases de pipeline (Solución RIESGO-01).
+pub struct FaseGuard {
+    fase_num: u8,
+    state: Arc<AppState>,
+    completado: bool,
+}
+
+impl FaseGuard {
+    pub fn nuevo(fase_num: u8, state: Arc<AppState>) -> Self {
+        Self {
+            fase_num,
+            state,
+            completado: false,
+        }
+    }
+
+    pub fn finalizar_con_exito(&mut self) {
+        self.completado = true;
+    }
+}
+
+impl Drop for FaseGuard {
+    fn drop(&mut self) {
+        let state = Arc::clone(&self.state);
+        let fase = self.fase_num;
+        let ok = self.completado;
+        tokio::spawn(async move {
+            let mut p = state.estado_pipeline.write().await;
+            match fase {
+                1 => p.fase_1 = "idle".to_string(),
+                2 => p.fase_2 = "idle".to_string(),
+                3 => p.fase_3 = "idle".to_string(),
+                4 => p.fase_4 = "idle".to_string(),
+                _ => {}
+            }
+            if !ok {
+                state.emitir_log("WARN", &format!("Guardián RAII: Fase {} liberada automáticamente tras salida de contexto.", fase)).await;
+            }
+        });
     }
 }

@@ -29,7 +29,10 @@ pub async fn listar_videos(State(state): State<Arc<AppState>>) -> Json<Value> {
     let dir_procesados = state.ruta_base.join("procesados");
     let dir_persistencia = state.ruta_base.join("datos_persistencia");
 
-    let videos = GestorAlmacenamiento::listar_videos_disco(&dir_descargas, &dir_procesados, &dir_persistencia);
+    let videos = tokio::task::spawn_blocking(move || {
+        GestorAlmacenamiento::listar_videos_disco(&dir_descargas, &dir_procesados, &dir_persistencia)
+    }).await.unwrap_or_default();
+
     Json(json!({
         "videos": videos,
         "total": videos.len()
@@ -42,14 +45,23 @@ pub async fn eliminar_video(
 ) -> Json<Value> {
     let dir_descargas = state.ruta_base.join("descargas");
     let dir_procesados = state.ruta_base.join("procesados");
+    let id_clone = id.clone();
 
-    match GestorAlmacenamiento::eliminar_video(&dir_descargas, &dir_procesados, &id) {
-        Ok(_) => {
+    let resultado = tokio::task::spawn_blocking(move || {
+        GestorAlmacenamiento::eliminar_video(&dir_descargas, &dir_procesados, &id_clone)
+    }).await;
+
+    match resultado {
+        Ok(Ok(_)) => {
             state.emitir_log("OK", &format!("Video '{}' eliminado de disco.", id)).await;
             Json(json!({"ok": true, "mensaje": format!("Video {} eliminado.", id)}))
         }
-        Err(e) => {
+        Ok(Err(e)) => {
             state.emitir_log("ERROR", &format!("Error al eliminar video '{}': {}", id, e)).await;
+            Json(json!({"ok": false, "error": e.to_string()}))
+        }
+        Err(e) => {
+            state.emitir_log("ERROR", &format!("Error de concurrencia al eliminar video '{}': {}", id, e)).await;
             Json(json!({"ok": false, "error": e.to_string()}))
         }
     }

@@ -1,0 +1,30 @@
+<div class="mover" id="m-programar">
+  <div class="modal">
+    <div class="mhdr"><div class="mtitle"><img src="iconos/programar.svg" class="icono-svg" /> Programar Nueva Tarea</div><button class="mclose" onclick="cerrarModal('m-programar')">✕</button></div>
+    <div class="mbody">
+      <!-- Aviso de Estado en Espera -->
+      <div style="font-size:11px;color:var(--amber);background:rgba(245,158,11,0.08);border:1px solid rgba(245,158,11,0.25);border-radius:6px;padding:8px 10px;margin-bottom:12px;line-height:1.4">
+        ⏳ <strong>Módulo en espera de conexión:</strong> Las tareas programadas se registrarán en la cola local mientras se integra el demonio cron nativo de Tokio en Rust.
+      </div>
+
+      <div class="fg"><label class="fl">Tipo de Tarea</label><select class="fsel" id="m-prog-tipo"><option>Pipeline Completo (1+2+3)</option><option>Solo Extracción (Fase 1)</option><option>Solo Edición (Fase 2)</option><option>Solo Publicación (Fase 3)</option></select></div>
+      <div class="fg"><label class="fl">URL Objetivo (Facebook)</label><input type="url" class="fi" id="m-prog-url" placeholder="https://www.facebook.com/watch/" /></div>
+      <div class="grid-2col">
+        <div class="fg"><label class="fl">Fecha</label><input type="date" class="fi" id="m-prog-fecha" /></div>
+        <div class="fg"><label class="fl">Hora</label><input type="time" class="fi" id="m-prog-hora" value="03:00" /></div>
+      </div>
+      <div class="fg"><label class="fl">Repetición</label><select class="fsel" id="m-prog-rep"><option>Sin repetición (una vez)</option><option>Cada hora</option><option>Cada 6 horas</option><option>Diariamente</option><option>Cada semana</option></select></div>
+      <div class="fg"><label class="fl">Plataformas Objetivo</label>
+        <div class="pl-sel">
+          <label class="plci"><input type="checkbox" id="m-prog-plat-tg" checked> <img src="iconos/telegram.svg" class="icono-svg-sm" /> Telegram (MTProto)</label>
+          <label class="plci"><input type="checkbox" id="m-prog-plat-fb"> <img src="iconos/facebook.svg" class="icono-svg-sm" /> Facebook (CDP)</label>
+          <label class="plci" style="opacity:0.65" title="En espera de integración"><input type="checkbox" id="m-prog-plat-yt" disabled> <img src="iconos/youtube.svg" class="icono-svg-sm" /> YouTube [Espera]</label>
+          <label class="plci" style="opacity:0.65" title="En espera de integración"><input type="checkbox" id="m-prog-plat-tk" disabled> <img src="iconos/tiktok.svg" class="icono-svg-sm" /> TikTok [Espera]</label>
+          <label class="plci" style="opacity:0.65" title="En espera de integración"><input type="checkbox" id="m-prog-plat-ig" disabled> <img src="iconos/instagram.svg" class="icono-svg-sm" /> Instagram [Espera]</label>
+        </div>
+      </div>
+      <div class="fg"><label class="fl">Velocidad</label><select class="fsel" id="m-prog-vel"><option>1.0x — Normal (sin recodificar)</option><option>1.25x — Rápido (GPU)</option><option>1.50x — Muy rápido (GPU)</option></select></div>
+    </div>
+    <div class="mfoot"><button class="btn bs" onclick="cerrarModal('m-programar')">Cancelar</button><button class="btn bp" onclick="guardarProg()"><img src="iconos/guardar.svg" class="icono-svg-sm" /> Guardar Tarea</button></div>
+  </div>
+</div>

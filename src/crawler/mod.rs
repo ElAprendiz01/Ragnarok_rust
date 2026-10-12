@@ -80,10 +80,11 @@ impl GestorExtraccion {
                 }
             }
 
-            // Simular scroll humano con distancia variable
-            let distancia = 400 + (i as i32 % 3) * 150;
+            // Simular scroll humano con distancia y pausas orgánicas variables (Anti-detección Facebook)
+            let distancia = 420 + ((i as i32 * 137) % 350);
             let _ = driver.simular_scroll_humano(distancia).await;
-            tokio::time::sleep(Duration::from_millis(1500)).await;
+            let pausa_ms = 2200 + ((i as u64 * 373) % 1600);
+            tokio::time::sleep(Duration::from_millis(pausa_ms)).await;
         }
 
         // Guardar cookies finales tras la navegación

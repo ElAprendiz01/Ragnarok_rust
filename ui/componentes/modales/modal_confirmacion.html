@@ -1,0 +1,45 @@
+<div class="custom-dialog-overlay" id="m-confirm-custom" style="display:none">
+  <div class="custom-dialog-card" role="dialog" aria-modal="true" aria-labelledby="m-confirm-titulo">
+    <div class="dialog-top-tag">
+      <span class="dialog-pulse-dot"></span>
+      <span id="m-confirm-tag">PURGA PERMANENTE DE DISCO</span>
+    </div>
+
+    <div class="dialog-hdr">
+      <div class="dialog-icon-box">
+        <img src="iconos/eliminar.svg" id="m-confirm-icon-img" class="icono-svg" alt="Peligro" />
+      </div>
+      <div class="dialog-title-group">
+        <div class="dialog-title" id="m-confirm-titulo">¿Eliminar Video y Metadatos JSON?</div>
+        <div class="dialog-sub" id="m-confirm-sub">Esta acción purgará físicamente el archivo original, todos los clips y la configuración JSON.</div>
+      </div>
+    </div>
+
+    <div class="dialog-target-box">
+      <div class="dialog-target-header">
+        <div class="dialog-target-icon"><img src="iconos/videos.svg" class="icono-svg-sm" /></div>
+        <div class="dialog-target-title" id="m-confirm-item-titulo">Título del video</div>
+      </div>
+      <div class="dialog-target-meta">
+        <span class="dialog-badge-id" id="m-confirm-item-id">ID: 073c1f4bd7b245bb</span>
+      </div>
+      <div class="dialog-detalles-list" id="m-confirm-detalles">
+        <!-- Inyectado dinámicamente -->
+      </div>
+    </div>
+
+    <div class="dialog-alert-note">
+      <img src="iconos/alerta.svg" class="icono-svg-sm" />
+      <span id="m-confirm-nota">El espacio en disco se liberará de inmediato. Esta acción no se puede deshacer.</span>
+    </div>
+
+    <div class="dialog-footer">
+      <button type="button" class="btn-dialog-cancel" id="m-confirm-btn-cancel">
+        Cancelar <kbd class="dialog-kbd">Esc</kbd>
+      </button>
+      <button type="button" class="btn-dialog-danger" id="m-confirm-btn-action">
+        <img src="iconos/eliminar.svg" class="icono-svg-sm" /> Eliminar Permanentemente
+      </button>
+    </div>
+  </div>
+</div>

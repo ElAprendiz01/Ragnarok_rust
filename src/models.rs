@@ -44,6 +44,7 @@ pub struct EdicionConfig {
     pub threads_ffmpeg: Option<u32>,
     pub encoder_preferido: Option<String>,
     pub stream_copy: Option<bool>,
+    pub corte_exacto: Option<bool>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, Default)]

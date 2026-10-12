@@ -48,21 +48,6 @@ pub async fn liberar_bloqueos_perfil(ruta_base: &Path) {
         return;
     }
 
-    // 1. En Windows, buscar y liquidar procesos zombi que tengan anclado este perfil
-    #[cfg(windows)]
-    {
-        let script_check = format!(
-            "Get-CimInstance Win32_Process | Where-Object {{ ($_.Name -match 'chrome|edge') -and ($_.CommandLine -like '*perfil_facebook_chromium*') }} | ForEach-Object {{ Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }}"
-        );
-        let _ = tokio::process::Command::new("powershell")
-            .args(["-NoProfile", "-NonInteractive", "-Command", &script_check])
-            .stdout(std::process::Stdio::null())
-            .stderr(std::process::Stdio::null())
-            .status()
-            .await;
-    }
-
-    // 2. Eliminar archivos de bloqueo residuales que impiden abrir Chromium
     let lockfiles = [
         "lockfile",
         "SingletonLock",
@@ -70,10 +55,39 @@ pub async fn liberar_bloqueos_perfil(ruta_base: &Path) {
         "SingletonSocket",
     ];
 
+    // 1. Verificación rápida sin costo de proceso: intentar eliminar lockfiles directamente
+    let mut bloqueo_retenido = false;
     for lock_name in &lockfiles {
         let ruta_lock = perfil_dir.join(lock_name);
         if ruta_lock.exists() {
-            let _ = tokio::fs::remove_file(&ruta_lock).await;
+            if let Err(_) = tokio::fs::remove_file(&ruta_lock).await {
+                // El archivo está retenido activamente por un proceso huérfano
+                bloqueo_retenido = true;
+            }
+        }
+    }
+
+    // 2. Únicamente si los archivos estaban retenidos por un proceso zombi, invocar limpieza
+    if bloqueo_retenido {
+        #[cfg(windows)]
+        {
+            let script_check = format!(
+                "Get-CimInstance Win32_Process | Where-Object {{ ($_.Name -match 'chrome|edge') -and ($_.CommandLine -like '*perfil_facebook_chromium*') }} | ForEach-Object {{ Stop-Process -Id $_.ProcessId -Force -ErrorAction SilentlyContinue }}"
+            );
+            let _ = tokio::process::Command::new("powershell")
+                .args(["-NoProfile", "-NonInteractive", "-Command", &script_check])
+                .stdout(std::process::Stdio::null())
+                .stderr(std::process::Stdio::null())
+                .status()
+                .await;
+        }
+
+        // Reintentar remoción limpia tras terminar el proceso
+        for lock_name in &lockfiles {
+            let ruta_lock = perfil_dir.join(lock_name);
+            if ruta_lock.exists() {
+                let _ = tokio::fs::remove_file(&ruta_lock).await;
+            }
         }
     }
 }

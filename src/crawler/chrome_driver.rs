@@ -260,3 +260,14 @@ impl ChromeDriver {
     }
 }
 
+impl Drop for ChromeDriver {
+    fn drop(&mut self) {
+        if let Some(child) = self.proceso_chrome.take() {
+            if let Some(pid) = child.id() {
+                super::proceso_limpieza::matar_arbol_proceso(pid);
+            }
+        }
+    }
+}
+
+

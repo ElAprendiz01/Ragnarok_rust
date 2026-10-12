@@ -1,0 +1,244 @@
+    <div id="pg-estudio" style="display:none">
+      <div class="fu">
+        <div class="sh">
+          <div>
+            <span class="st"><img src="iconos/estudio.svg" class="icono-svg-sm" style="margin-right:6px" /> Estudio de Reproducción & Editor de Publicación</span>
+            <div class="txt-small-sub" style="margin-top:2px">Reproducción adaptativa con pixeles controlados, edición de metadatos en tiempo real y publicación multicanal.</div>
+          </div>
+          <div class="flex-gap-8">
+            <button class="btn bs bsm" onclick="toggleModoTeatro()" id="btn-modo-teatro" title="Modo Cine / Expansión"><img src="iconos/videos.svg" class="icono-svg-sm" /> Modo Cine</button>
+            <button class="btn bs bsm" onclick="activarModoFlotanteDesdeEstudio()" title="Minimizar a widget flotante"><img src="iconos/pantalla.svg" class="icono-svg-sm" /> Modo Flotante (PiP)</button>
+            <button class="btn bp bsm" onclick="cargarGaleriaDesdeServidor()"><img src="iconos/refrescar.svg" class="icono-svg-sm" /> Sincronizar Disco</button>
+          </div>
+        </div>
+
+        <div class="estudio-grid" id="estudio-grid-layout">
+          <!-- Columna Izquierda: Reproductor Principal + Editor de Metadata -->
+          <div class="estudio-col-video">
+            
+            <!-- Contenedor Inteligente del Reproductor -->
+            <div class="estudio-player-card" id="estudio-player-box">
+              <div class="estudio-video-viewport" id="estudio-viewport">
+                <video id="estudio-video" preload="metadata" playsinline></video>
+                <div id="estudio-poster" class="estudio-poster" onclick="estudioPosterClick()">
+                  <div class="estudio-poster-ico"><img src="iconos/videos.svg" class="icono-svg-xl" /></div>
+                  <div class="estudio-poster-title" id="estudio-poster-title">Ningún video seleccionado</div>
+                  <div class="estudio-poster-sub" id="estudio-poster-sub">Haz clic en un video de la biblioteca lateral para reproducir y editar</div>
+                  <button class="btn bp bsm" id="estudio-poster-play-btn" style="margin-top:10px;display:none" onclick="event.stopPropagation();estudioPosterClick()"><img src="iconos/play.svg" class="icono-svg-sm" /> Reproducir Video</button>
+                </div>
+                <div class="estudio-badge-overlay" id="estudio-badge-overlay">
+                  <span id="estudio-badge-estado" class="badge-pill">Sin video</span>
+                  <span id="estudio-badge-resolucion" class="badge-pill dim">HD</span>
+                </div>
+              </div>
+
+              <!-- Barra de Controles Pro -->
+              <div class="estudio-controls">
+                <div class="estudio-prog-wrap" id="estudio-prog-wrap" onclick="seekEstudio(event)">
+                  <div class="estudio-prog-track">
+                    <div class="estudio-prog-fill" id="estudio-prog-fill"></div>
+                    <div class="estudio-prog-thumb" id="estudio-prog-thumb"></div>
+                  </div>
+                </div>
+                <div class="estudio-controls-row">
+                  <div class="flex-align-8">
+                    <button class="estudio-btn" onclick="estudioPrev()" title="Anterior"><img src="iconos/anterior.svg" class="icono-svg-sm" /></button>
+                    <button class="estudio-btn" onclick="estudioSkip(-10)" title="Retroceder 10s"><img src="iconos/retroceder.svg" class="icono-svg-sm" /></button>
+                    <button class="estudio-btn main" id="estudio-play-btn" onclick="estudioTogglePlay()" title="Reproducir / Pausar"><img src="iconos/play.svg" class="icono-svg-sm" /></button>
+                    <button class="estudio-btn" onclick="estudioSkip(10)" title="Avanzar 10s"><img src="iconos/avanzar.svg" class="icono-svg-sm" /></button>
+                    <button class="estudio-btn" onclick="estudioNext()" title="Siguiente"><img src="iconos/siguiente.svg" class="icono-svg-sm" /></button>
+                    <div class="estudio-time-box">
+                      <span id="estudio-cur">0:00</span> / <span id="estudio-dur">0:00</span>
+                    </div>
+                  </div>
+
+                  <div class="flex-align-8">
+                    <div class="estudio-vol-box">
+                      <button class="estudio-btn-icon" id="estudio-mute-btn" onclick="estudioToggleMute()"><img src="iconos/audio.svg" class="icono-svg-sm" /></button>
+                      <input type="range" class="estudio-vol-slider" id="estudio-vol" min="0" max="1" step="0.05" value="1" oninput="estudioSetVol(this.value)">
+                    </div>
+
+                    <div class="estudio-speed-chips">
+                      <span class="estudio-spd" data-spd="0.75" onclick="estudioSetSpeed(0.75)">0.75x</span>
+                      <span class="estudio-spd actv" data-spd="1.0" onclick="estudioSetSpeed(1.0)">1.0x</span>
+                      <span class="estudio-spd" data-spd="1.25" onclick="estudioSetSpeed(1.25)">1.25x</span>
+                      <span class="estudio-spd" data-spd="1.5" onclick="estudioSetSpeed(1.5)">1.5x</span>
+                      <span class="estudio-spd" data-spd="2.0" onclick="estudioSetSpeed(2.0)">2.0x</span>
+                    </div>
+
+                    <button class="estudio-btn-icon" onclick="estudioToggleFullscreen()" title="Pantalla Completa"><img src="iconos/pantalla.svg" class="icono-svg-sm" /></button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Panel Editor de Metadata en Tiempo Real (JSON) -->
+            <div class="card card-pad estudio-meta-card">
+              <div class="flex-between" style="margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:10px">
+                <div class="flex-align-8">
+                  <span class="cico cico-cyan"><img src="iconos/config.svg" class="icono-svg-sm" /></span>
+                  <div>
+                    <div style="font-weight:700;font-size:14px;color:var(--txt1)">Editor de Metadatos de Publicación (JSON en Tiempo Real)</div>
+                    <div style="font-size:11px;color:var(--txt3)">Lo que edites aquí se guarda directamente en metadata.json y será lo que se publique automáticamente.</div>
+                  </div>
+                </div>
+                <div class="flex-align-8">
+                  <span id="meta-save-badge" class="meta-badge-idle"><img src="iconos/check.svg" class="icono-svg-sm" /> Sincronizado</span>
+                  <button class="btn bp bsm" onclick="guardarMetadatosActivo()"><img src="iconos/guardar.svg" class="icono-svg-sm" /> Guardar Ahora</button>
+                  <button class="btn bd bsm" onclick="confirmarEliminarVideoEstudio()" title="Eliminar este video, sus clips y su archivo JSON permanentemente del disco"><img src="iconos/eliminar.svg" class="icono-svg-sm" /> Eliminar Video & JSON</button>
+                </div>
+              </div>
+
+              <!-- Formulario de edición en vivo -->
+              <div class="form-grid-meta">
+                <div class="fg">
+                  <div class="flex-between">
+                    <label class="fl">Título del Video (Máx 100 caracteres para Facebook/YouTube/TikTok)</label>
+                    <span id="meta-chars-titulo" style="font-size:11px;font-family:var(--mono);color:var(--txt3)">0/100</span>
+                  </div>
+                  <input type="text" class="fi" id="meta-input-titulo" placeholder="Título descriptivo del video o película..." oninput="onInputMetadatos('titulo', this.value)" />
+                </div>
+
+                <div class="fg">
+                  <div class="flex-between">
+                    <label class="fl">Descripción & Sinopsis (Hashtags, menciones, créditos)</label>
+                    <span id="meta-chars-desc" style="font-size:11px;font-family:var(--mono);color:var(--txt3)">0 caracteres</span>
+                  </div>
+                  <textarea class="fi" id="meta-input-desc" rows="3" placeholder="Escribe la sinopsis, hashtags (#Peliculas #Accion) o descripción que acompañará la publicación..." oninput="onInputMetadatos('desc', this.value)"></textarea>
+                </div>
+
+                <!-- Chips técnicos del video -->
+                <div class="meta-tech-row">
+                  <div class="tech-chip"><span class="tech-lbl">ID:</span> <span id="meta-tech-id" class="tech-val">—</span></div>
+                  <div class="tech-chip"><span class="tech-lbl">Duración:</span> <span id="meta-tech-dur" class="tech-val">—</span></div>
+                  <div class="tech-chip"><span class="tech-lbl">Tamaño:</span> <span id="meta-tech-tam" class="tech-val">—</span></div>
+                  <div class="tech-chip"><span class="tech-lbl">Resolución:</span> <span id="meta-tech-res" class="tech-val">—</span></div>
+                  <div class="tech-chip"><span class="tech-lbl">Archivo:</span> <span id="meta-tech-path" class="tech-val">—</span></div>
+                </div>
+
+                <!-- Acciones rápidas de publicación directa para este video -->
+                <div class="meta-pub-actions">
+                  <span style="font-size:11px;font-weight:600;color:var(--txt2);margin-right:6px">Publicar este video:</span>
+                  <button class="btn bs bsm btn-pub-tg" onclick="publicarVideoActivo('telegram')"><img src="iconos/telegram.svg" class="icono-svg-sm" /> Telegram HD</button>
+                  <button class="btn bs bsm" onclick="publicarVideoActivo('youtube')"><img src="iconos/youtube.svg" class="icono-svg-sm" /> YouTube</button>
+                  <button class="btn bs bsm" onclick="publicarVideoActivo('tiktok')"><img src="iconos/tiktok.svg" class="icono-svg-sm" /> TikTok</button>
+                  <button class="btn bs bsm" onclick="publicarVideoActivo('facebook')"><img src="iconos/facebook.svg" class="icono-svg-sm" /> Facebook</button>
+                  <button class="btn bs bsm" onclick="publicarVideoActivo('instagram')"><img src="iconos/instagram.svg" class="icono-svg-sm" /> Instagram</button>
+                  <button class="btn bp bsm" onclick="ejecutarFase(3)"><img src="iconos/pipeline.svg" class="icono-svg-sm" /> Todas las Redes</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Módulo de Recorte Inteligente en Partes / Segmentación -->
+            <div class="card card-pad estudio-recorte-card" style="margin-top:14px">
+              <div class="flex-between" style="margin-bottom:12px;border-bottom:1px solid var(--border);padding-bottom:10px">
+                <div class="flex-align-8">
+                  <span class="cico cico-amber"><img src="iconos/cortar.svg" class="icono-svg-sm" /></span>
+                  <div>
+                    <div style="font-weight:700;font-size:14px;color:var(--txt1)">Módulo de Recorte & Segmentación de Video</div>
+                    <div style="font-size:11px;color:var(--txt3)">Divide el video en partes optimizadas para TikTok, YouTube Shorts, Reels o secuencias para Facebook/Telegram.</div>
+                  </div>
+                </div>
+                <div class="flex-align-8">
+                  <span id="badge-estado-recorte" class="tbadge pend">Sin clips</span>
+                </div>
+              </div>
+
+              <!-- Controles de recorte -->
+              <div style="display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:end;margin-bottom:12px">
+                <div>
+                  <label class="fl">Duración por Segmento</label>
+                  <select class="fsel" id="sel-duracion-recorte" onchange="onCambioDuracionRecorte(this.value)">
+                    <option value="60">60 segundos (TikTok / Shorts / Reels)</option>
+                    <option value="180">3 minutos (180s — Facebook / Clips Medios)</option>
+                    <option value="480" selected>8 minutos (480s — Estándar Fase 2 / Películas)</option>
+                    <option value="custom">Personalizado (segundos)...</option>
+                  </select>
+                </div>
+                <div id="wrap-duracion-custom" style="display:none;width:120px">
+                  <label class="fl">Segundos</label>
+                  <input type="number" class="fi" id="input-duracion-custom" placeholder="Ej: 90" min="10" max="7200" value="60" />
+                </div>
+                <div style="width:160px">
+                  <label class="fl">Velocidad</label>
+                  <select class="fsel" id="sel-velocidad-recorte">
+                    <option value="1.0" selected>1.0x (Normal)</option>
+                    <option value="1.25">1.25x (Rápido)</option>
+                    <option value="1.5">1.5x (Acelerado)</option>
+                  </select>
+                </div>
+                <div>
+                  <button class="btn bp" id="btn-ejecutar-recorte" onclick="ejecutarRecorteEstudio()" style="white-space:nowrap;height:34px">
+                    <img src="iconos/cortar.svg" class="icono-svg-sm" /> Cortar en Partes
+                  </button>
+                </div>
+              </div>
+
+              <!-- Contenedor de Clips Hijos Generados -->
+              <div id="contenedor-clips-estudio" style="background:var(--bg1);border:1px solid var(--border);border-radius:8px;padding:10px">
+                <div class="flex-between" style="margin-bottom:8px">
+                  <span style="font-size:12px;font-weight:700;color:var(--txt1)" id="titulo-clips-estudio">Clips Recortados (0 partes)</span>
+                  <span style="font-size:11px;color:var(--txt3)">Haz clic en un clip para previsualizarlo en el reproductor</span>
+                </div>
+                <div id="lista-clips-estudio" style="display:flex;flex-direction:column;gap:6px;max-height:220px;overflow-y:auto">
+                  <div style="font-size:11px;color:var(--txt3);text-align:center;padding:12px">El video actual no tiene clips recortados. Usa el botón superior para generarlos.</div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          <!-- Columna Derecha: Biblioteca Lateral Inteligente -->
+          <div class="estudio-col-lista">
+            <div class="card card-pad estudio-playlist-card">
+              <div class="flex-between" style="margin-bottom:10px">
+                <div class="flex-align-8">
+                  <span class="cico cico-amber"><img src="iconos/videos.svg" class="icono-svg" /></span>
+                  <span style="font-weight:700;font-size:13px;color:var(--txt1)">Lista de Videos</span>
+                </div>
+                <div class="flex-align-8">
+                  <button class="btn bd bsm" id="btn-limpiar-filtro-estudio" style="display:none;padding:2px 7px;font-size:10px;height:auto" onclick="limpiarTodosFiltros()" title="Mostrar todos los videos"><img src="iconos/eliminar.svg" class="icono-svg-sm" style="width:10px;height:10px" /> Mostrar todos</button>
+                  <span class="tbadge actv" id="estudio-total-badge">0 videos</span>
+                </div>
+              </div>
+
+              <!-- Filtro y Buscador en Tiempo Real -->
+              <div class="estudio-search-row">
+                <input type="text" class="fi" id="estudio-input-busqueda" placeholder="Buscar por título o ID..." oninput="filtrarVideosEstudio(this.value)" />
+                <select class="fsel" id="estudio-filter-estado" onchange="cambiarFiltroEstado(this.value)">
+                  <option value="all">Todos</option>
+                  <option value="descargado">Descargados</option>
+                  <option value="editado">Editados</option>
+                  <option value="publicado">Publicados</option>
+                </select>
+              </div>
+
+              <!-- Fila de Filtro Fecha 'Hoy' y Orden Más Reciente / Más Viejo -->
+              <div style="display:flex;gap:6px;margin-bottom:8px;align-items:center">
+                <button class="btn bs bsm" id="btn-filtro-hoy-estudio" style="flex:1;justify-content:center;font-size:11px" onclick="toggleFiltroHoy()"><img src="iconos/pipeline.svg" class="icono-svg-sm" /> Descargados Hoy</button>
+                <select class="fsel" id="estudio-sort" style="flex:1;font-size:11px" onchange="cambiarOrdenVideos(this.value)">
+                  <option value="recientes">Más recientes</option>
+                  <option value="antiguos">Más antiguos</option>
+                </select>
+              </div>
+
+              <!-- Etiqueta de Filtros Activos con Botón de Mostrar Todos -->
+              <div id="estudio-filtro-tags" style="display:none;align-items:center;justify-content:space-between;gap:6px;margin-bottom:8px;font-size:11px;padding:4px 8px;background:rgba(0,212,255,0.06);border:1px solid rgba(0,212,255,0.2);border-radius:4px">
+                <span style="color:var(--cyan);font-weight:600;font-size:10px" id="estudio-filtro-badge">Filtrado activo</span>
+                <button class="btn bd bsm" style="padding:2px 6px;font-size:9px;height:auto" onclick="limpiarTodosFiltros()">Mostrar todos</button>
+              </div>
+
+              <!-- Contenedor con Scroll Optimizado -->
+              <div class="estudio-playlist-scroll" id="estudio-playlist-container">
+                <div class="td-empty">Cargando biblioteca de videos...</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </main><!-- /main -->
+</div><!-- /layout -->
+

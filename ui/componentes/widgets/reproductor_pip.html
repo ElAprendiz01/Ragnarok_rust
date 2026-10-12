@@ -1,0 +1,51 @@
+<div id="pip-player">
+  <!-- Drag Handle -->
+  <div id="pip-drag">
+    <div class="pip-drag-title" id="pip-title">Sin video seleccionado</div>
+    <div class="pip-drag-actions">
+      <button class="pip-act-btn" onclick="pipMinimize()" title="Minimizar">—</button>
+      <button class="pip-act-btn" onclick="pipExpand()" title="Expandir"><img src="iconos/pantalla.svg" class="icono-svg-sm" /></button>
+      <button class="pip-act-btn" onclick="cerrarPiP()" title="Cerrar">✕</button>
+    </div>
+  </div>
+
+  <!-- Video -->
+  <div id="pip-video-wrap">
+    <video id="pip-video" preload="metadata"></video>
+    <div id="pip-poster">
+      <div class="pip-empty-ico"><img src="iconos/play.svg" class="icono-svg-xl" /></div>
+      <div class="pip-empty-txt">Selecciona un video de la<br>Biblioteca o de la Cola</div>
+    </div>
+  </div>
+
+  <!-- Controles -->
+  <div id="pip-controls">
+    <div class="pip-progress-wrap" id="pip-prog-wrap" onclick="seekVideo(event)">
+      <div class="pip-progress-track">
+        <div class="pip-progress-fill" id="pip-prog-fill"></div>
+        <div class="pip-progress-thumb" id="pip-prog-thumb"></div>
+      </div>
+    </div>
+    <div class="pip-time">
+      <span id="pip-cur">0:00</span>
+      <span id="pip-dur">0:00</span>
+    </div>
+    <div class="pip-btns">
+      <button class="pip-btn" onclick="pipPrev()" title="Anterior"><img src="iconos/anterior.svg" class="icono-svg-sm" /></button>
+      <button class="pip-btn" onclick="pip10Back()" title="-10s"><img src="iconos/retroceder.svg" class="icono-svg-sm" /></button>
+      <button class="pip-btn main" id="pip-play-btn" onclick="togglePlay()"><img src="iconos/play.svg" class="icono-svg-sm" /></button>
+      <button class="pip-btn" onclick="pip10Fwd()" title="+10s"><img src="iconos/avanzar.svg" class="icono-svg-sm" /></button>
+      <button class="pip-btn" onclick="pipNext()" title="Siguiente"><img src="iconos/siguiente.svg" class="icono-svg-sm" /></button>
+      <div class="pip-sp"></div>
+      <div class="pip-vol-wrap">
+        <button class="pip-btn btn-font-14" onclick="toggleMute()" id="pip-mute-btn"><img src="iconos/audio.svg" class="icono-svg-sm" /></button>
+        <input type="range" class="pip-vol" id="pip-vol" min="0" max="1" step="0.05" value="1" oninput="setVol(this.value)">
+      </div>
+      <span class="pip-speed-badge" id="pip-spd" onclick="cycleSpeed()">1.0x</span>
+    </div>
+  </div>
+
+  <!-- Playlist -->
+  <div class="pip-playlist" id="pip-playlist"></div>
+</div>
+

@@ -1,0 +1,267 @@
+    <div id="pg-dash">
+
+      <!-- Acciones rápidas -->
+      <div class="fu">
+        <div class="sh"><span class="st">Acciones Rápidas</span></div>
+        <div class="qa-grid qa-grid-responsive">
+          <div class="qa-btn" onclick="ejecutarPipelineCompleto()"><div class="qa-ico"><img src="iconos/pipeline.svg" class="icono-svg-xl" alt="Pipeline" /></div><div class="qa-lbl">Pipeline Completo</div><div class="qa-sub">Fases 1 → 2 → 3</div></div>
+          <div class="qa-btn" onclick="ejecutarFase(1)"><div class="qa-ico"><img src="iconos/buscar.svg" class="icono-svg-xl" alt="Scraping" /></div><div class="qa-lbl">Scraping + Descarga</div><div class="qa-sub">Scraping + yt-dlp</div></div>
+          <div class="qa-btn" onclick="ejecutarDescargaUnicamente()"><div class="qa-ico"><img src="iconos/descargar.svg" class="icono-svg-xl" alt="Descargar" /></div><div class="qa-lbl">Solo Descargar</div><div class="qa-sub">Descarga cola de pendientes</div></div>
+          <div class="qa-btn" onclick="abrirProgramar()"><div class="qa-ico"><img src="iconos/programar.svg" class="icono-svg-xl" alt="Programar" /></div><div class="qa-lbl">Programar Tarea</div><div class="qa-sub">Scheduler automático</div></div>
+          <div class="qa-btn" onclick="navTo('videos',document.getElementById('nav-videos'))"><div class="qa-ico"><img src="iconos/videos.svg" class="icono-svg-xl" alt="Videos" /></div><div class="qa-lbl">Ver Videos</div><div class="qa-sub">Biblioteca descargada</div></div>
+        </div>
+      </div>
+
+      <!-- GESTIÓN DE FUENTES URL -->
+      <div class="fu">
+        <div class="sh"><span class="st">Fuentes de Extracción (Facebook: Grupos, Páginas, Watch...)</span><button class="btn bs bsm" onclick="cargarFuentesDesdeServidor()"><img src="iconos/refrescar.svg" class="icono-svg-sm" /> Recargar Fuentes</button></div>
+        <div class="card card-pad">
+          <!-- Formulario agregar nueva fuente -->
+          <div class="form-grid-btn">
+            <div class="fg">
+              <label class="fl">URL de Facebook (Grupo, Página, Watch, Perfil, Reel, Video Directo...)</label>
+              <input type="url" class="fi" id="nueva-fuente-url" placeholder="https://www.facebook.com/groups/nombre_grupo/videos/ o https://www.facebook.com/watch/" />
+            </div>
+            <button class="btn bp btn-form-action" onclick="agregarFuenteURL()"><img src="iconos/fuentes.svg" class="icono-svg-sm" /> Agregar Fuente</button>
+          </div>
+          <!-- Ejemplos rápidos de tipos de fuente -->
+          <div class="ejemplos-row">
+            <span class="fw-600">Tipos soportados:</span>
+            <span class="tbadge actv btn-pointer" onclick="setEjemplo('https://www.facebook.com/watch/')">Watch Global</span>
+            <span class="tbadge actv btn-pointer" onclick="setEjemplo('https://www.facebook.com/groups/peliculasymovietrailers/videos/')">Grupo</span>
+            <span class="tbadge actv btn-pointer" onclick="setEjemplo('https://www.facebook.com/PeliculasResumenes/videos/')">Página</span>
+            <span class="tbadge actv btn-pointer" onclick="setEjemplo('https://www.facebook.com/reel/1234567890/')">Reel</span>
+          </div>
+          <!-- Tabla de fuentes agregadas -->
+          <table class="stab" id="tabla-fuentes">
+            <thead><tr><th>Tipo de Fuente</th><th>URL Original</th><th>URL de Scroll Generada</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody id="tb-fuentes">
+              <tr><td colspan="5" class="td-empty">No hay fuentes configuradas. Agrega una arriba o inicia el servidor.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- COLA DE PENDIENTES Y DESCARGA DIRECTA -->
+      <div class="fu">
+        <div class="sh">
+          <span class="st"><img src="iconos/descargar.svg" class="icono-svg-sm" style="margin-right:6px" /> Enlaces Directos de Video en Cola de Pendientes (yt-dlp)</span>
+          <div class="flex-gap-8">
+            <button class="btn bs bsm" onclick="cargarPendientesDesdeServidor()"><img src="iconos/refrescar.svg" class="icono-svg-sm" /> Recargar Cola</button>
+            <button class="btn bp bsm" onclick="ejecutarDescargaUnicamente()"><img src="iconos/descargar.svg" class="icono-svg-sm" /> Iniciar Descargas Pendientes</button>
+          </div>
+        </div>
+        <div class="card card-pad">
+          <!-- Formulario agregar enlace directo -->
+          <div class="form-grid-btn">
+            <div class="fg">
+              <label class="fl">Añadir URL Directa de Video (Facebook, YouTube, TikTok...)</label>
+              <input type="url" class="fi" id="nuevo-pendiente-url" placeholder="https://www.facebook.com/watch/?v=1234567890 o enlace directo de video..." />
+            </div>
+            <button class="btn bp btn-form-action" onclick="agregarEnlacePendiente()"><img src="iconos/descargar.svg" class="icono-svg-sm" /> Agregar a Cola</button>
+          </div>
+          <!-- Tabla de enlaces pendientes -->
+          <table class="stab">
+            <thead><tr><th>#</th><th>URL del Video Pendiente</th><th>Estado</th><th>Acciones</th></tr></thead>
+            <tbody id="tb-pendientes">
+              <tr><td colspan="4" class="td-empty">No hay enlaces pendientes en cola_pendientes.txt. Pega uno arriba para descargar directamente.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Estadísticas -->
+      <div class="fu2">
+        <div class="sh"><span class="st">Estadísticas de Sesión</span><span class="txt-small-sub" id="upd-time">—</span></div>
+        <div class="srow">
+          <div class="sc-card"><span class="sc-ico"><img src="iconos/fuentes.svg" class="icono-svg-lg" /></span><div class="sc-lbl">URLs Detectadas</div><div class="sc-val c-cyan" id="s-det">0</div><div class="sc-sub">Historial global</div></div>
+          <div class="sc-card"><span class="sc-ico"><img src="iconos/descargar.svg" class="icono-svg-lg" /></span><div class="sc-lbl">Videos Descargados</div><div class="sc-val c-green" id="s-desc">0</div><div class="sc-sub">MP4 en disco</div></div>
+          <div class="sc-card"><span class="sc-ico"><img src="iconos/cortar.svg" class="icono-svg-lg" /></span><div class="sc-lbl">Clips Generados</div><div class="sc-val c-purple" id="s-clips">0</div><div class="sc-sub">Partes de 8 min</div></div>
+          <div class="sc-card"><span class="sc-ico"><img src="iconos/telegram.svg" class="icono-svg-lg" /></span><div class="sc-lbl">Publicaciones</div><div class="sc-val c-amber" id="s-pub">0</div><div class="sc-sub">Todas las plataformas</div></div>
+        </div>
+      </div>
+
+      <!-- Control de Fases -->
+      <div class="fu3">
+        <div class="sh"><span class="st">Control de Fases</span><button class="btn bs bsm" onclick="detenerTodo()"><img src="iconos/eliminar.svg" class="icono-svg-sm" /> Detener Todo</button></div>
+        <div class="fgrid">
+
+          <!-- FASE 1 -->
+          <div class="fcard" id="fc1">
+            <div class="fglow bg-cyan"></div>
+            <div class="fhdr">
+              <div><div class="fnum">Fase 01</div><div class="fname">Extracción & Descarga</div><div class="fdesc">Scraping Facebook stealth, filtro anti-duplicados y descarga MP4 via yt-dlp</div></div>
+              <div class="fsi idle" id="fsi1"><span class="sdot"></span><span>Inactiva</span></div>
+            </div>
+            <div class="fmet">
+              <div class="fm"><div class="fm-l">Cola Pendiente</div><div class="fm-v c-amber" id="f1p">0</div></div>
+              <div class="fm"><div class="fm-l">Completados</div><div class="fm-v c-green" id="f1c">0</div></div>
+            </div>
+            <div class="pwrap"><div class="plbl"><span>Progreso</span><span id="f1pct">0%</span></div><div class="ptrack"><div class="pfill pfill-cyan" id="f1b"></div></div></div>
+            <div class="fact">
+              <button class="btn bp" id="btn1" onclick="ejecutarFase(1)"><img src="iconos/play.svg" class="icono-svg-sm" /> Iniciar</button>
+              <button class="btn bd bsm" onclick="detenerFase(1)" title="Detener"><img src="iconos/eliminar.svg" class="icono-svg-sm" /></button>
+              <button class="btn bs bsm" onclick="verLogFase(1)"><img src="iconos/logs.svg" class="icono-svg-sm" /> Log</button>
+            </div>
+          </div>
+
+          <!-- FASE 2 -->
+          <div class="fcard" id="fc2">
+            <div class="fglow bg-purple"></div>
+            <div class="fhdr">
+              <div><div class="fnum">Fase 02</div><div class="fname">Edición & Segmentación</div><div class="fdesc">Corte en bloques de 8 min, ajuste de velocidad y aceleración GPU (NVENC/QSV)</div></div>
+              <div class="fsi idle" id="fsi2"><span class="sdot"></span><span>Inactiva</span></div>
+            </div>
+            <div class="fmet">
+              <div class="fm"><div class="fm-l">En Cola</div><div class="fm-v c-purple" id="f2q">0</div></div>
+              <div class="fm"><div class="fm-l">Clips Generados</div><div class="fm-v c-green" id="f2c">0</div></div>
+            </div>
+            <div class="pwrap"><div class="plbl"><span>Procesamiento</span><span id="f2pct">0%</span></div><div class="ptrack"><div class="pfill pfill-purple" id="f2b"></div></div></div>
+            <div class="fact">
+              <button class="btn bp btn-purple" id="btn2" onclick="ejecutarFase(2)"><img src="iconos/play.svg" class="icono-svg-sm" /> Iniciar</button>
+              <button class="btn bd bsm" onclick="detenerFase(2)" title="Detener"><img src="iconos/eliminar.svg" class="icono-svg-sm" /></button>
+              <button class="btn bs bsm" onclick="abrirVelocidad()"><img src="iconos/pipeline.svg" class="icono-svg-sm" /> Vel</button>
+            </div>
+          </div>
+
+          <!-- FASE 3 -->
+          <div class="fcard" id="fc3">
+            <div class="fglow bg-pink"></div>
+            <div class="fhdr">
+              <div><div class="fnum">Fase 03</div><div class="fname">Publicación Multi-Redes</div><div class="fdesc">Distribución multicanal y purga automática tras confirmación en todas las redes</div></div>
+              <div class="fsi idle" id="fsi3"><span class="sdot"></span><span>Inactiva</span></div>
+            </div>
+            <div class="fmet">
+              <div class="fm"><div class="fm-l">Clips Pendientes</div><div class="fm-v c-pink" id="f3p">0</div></div>
+              <div class="fm"><div class="fm-l">Publicados Hoy</div><div class="fm-v c-green" id="f3c">0</div></div>
+            </div>
+            <div class="pwrap"><div class="plbl"><span>Publicación</span><span id="f3pct">0%</span></div><div class="ptrack"><div class="pfill pfill-pink" id="f3b"></div></div></div>
+            <div class="fact">
+              <button class="btn bp btn-pink" id="btn3" onclick="ejecutarFase(3)"><img src="iconos/play.svg" class="icono-svg-sm" /> Iniciar</button>
+              <button class="btn bd bsm" onclick="detenerFase(3)" title="Detener"><img src="iconos/eliminar.svg" class="icono-svg-sm" /></button>
+              <button class="btn bs bsm" onclick="abrirProgramar()" title="Programar"><img src="iconos/programar.svg" class="icono-svg-sm" /></button>
+            </div>
+          </div>
+
+          <!-- FASE 4: TELEGRAM HD -->
+          <div class="fcard" id="fc4">
+            <div class="fglow" style="background:#0088cc"></div>
+            <div class="fhdr">
+              <div><div class="fnum">Fase 04</div><div class="fname">Telegram HD Directo</div><div class="fdesc">Envío de video HD completo sin comprimir directamente al canal de Telegram</div></div>
+              <div class="fsi idle" id="fsi4"><span class="sdot"></span><span>Inactiva</span></div>
+            </div>
+            <div class="fmet">
+              <div class="fm"><div class="fm-l">HD Pendientes</div><div class="fm-v c-cyan" id="f4p">0</div></div>
+              <div class="fm"><div class="fm-l">Subidos Canal</div><div class="fm-v c-green" id="f4c">0</div></div>
+            </div>
+            <div class="pwrap"><div class="plbl"><span>Subida Telegram</span><span id="f4pct">0%</span></div><div class="ptrack"><div class="pfill" id="f4b" style="width:0%;background:linear-gradient(90deg,#005588,#0088cc)"></div></div></div>
+            <div class="fact">
+              <button class="btn bp btn-telegram" id="btn4" onclick="abrirModalTelegramLotes()"><img src="iconos/telegram.svg" class="icono-svg-sm" /> Publicar Todo</button>
+              <button class="btn bp bsm btn-telegram" onclick="abrirModalTelegramManual()"><img src="iconos/videos.svg" class="icono-svg-sm" /> Selección Manual</button>
+              <button class="btn bd bsm" onclick="detenerFase(4)"><img src="iconos/eliminar.svg" class="icono-svg-sm" /> Parar</button>
+            </div>
+          </div>
+
+
+        </div>
+      </div>
+
+      <!-- Bottom Grid: Scheduler + Plataformas + Cola + Log -->
+      <div class="fu4">
+        <div class="bgrid">
+          <div class="bleft">
+
+            <!-- Scheduler -->
+            <div class="card">
+              <div class="ctitle"><span class="cico cico-purple"><img src="iconos/programar.svg" class="icono-svg-sm" /></span>Programación de Publicaciones</div>
+              <div class="sched-row">
+                <div class="fg"><label class="fl">Tarea</label>
+                  <select class="fsel" id="sc-tarea"><option>Pipeline Completo (1+2+3)</option><option>Solo Extracción</option><option>Solo Edición</option><option>Solo Publicación</option></select></div>
+                <div class="fg"><label class="fl">Fecha</label><input type="date" class="fi" id="sc-fecha" /></div>
+                <div class="fg"><label class="fl">Hora</label><input type="time" class="fi" id="sc-hora" value="03:00" /></div>
+                <button class="btn bp btn-add-task" onclick="addTarea()"><img src="iconos/programar.svg" class="icono-svg-sm" /> Add</button>
+              </div>
+              <table class="stab">
+                <thead><tr><th>Tarea</th><th>Fecha & Hora</th><th>Estado</th><th></th></tr></thead>
+                <tbody id="tb-tareas">
+                  <tr id="sched-empty-row">
+                    <td colspan="4" class="td-empty" style="padding:14px;text-align:center">
+                      <span style="color:var(--amber);font-weight:600">⏳ Módulo Scheduler en espera de demonio cron nativo en Rust</span><br>
+                      <span style="font-size:11px;color:var(--txt3)">Las tareas programadas se integrarán al servicio asíncrono de Tokio en la próxima versión.</span>
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <!-- Log -->
+            <div class="log-card">
+              <div class="log-hdr">
+                <div class="log-title"><span class="live-dot"></span>Log de Actividad en Tiempo Real</div>
+                <div style="display:flex;gap:6px;align-items:center">
+                  <button class="btn bd bsm" id="btn-log-detener-lote" style="display:none;font-size:11px;padding:3px 8px;border-color:rgba(239,68,68,0.4);background:rgba(239,68,68,0.15);color:var(--red)" onclick="detenerLoteTelegram()"><img src="iconos/eliminar.svg" class="icono-svg-sm" /> Detener Lote</button>
+                  <button class="btn bs bsm" onclick="limpiarLog()"><img src="iconos/eliminar.svg" class="icono-svg-sm" /> Limpiar</button>
+                </div>
+              </div>
+              <div class="log-body" id="log-bd"></div>
+            </div>
+
+          </div>
+
+          <!-- Derecha: Plataformas + Cola -->
+          <div class="flex-col-gap-14">
+
+            <!-- Plataformas -->
+            <div class="card">
+              <div class="ctitle"><span class="cico cico-cyan"><img src="iconos/plataformas.svg" class="icono-svg-sm" /></span>Plataformas & Sesiones Reales</div>
+              <div class="pl-list">
+                <div class="pl-row"><div class="pl-logo yt"><img src="iconos/youtube.svg" alt="YouTube" /></div><div class="pl-info"><div class="pl-name">YouTube</div><div class="pl-st warn" id="st-yt">En espera de API / Cookies</div></div><label class="tog"><input type="checkbox" id="tog-yt" onchange="togPlat('YouTube',this)"><div class="tog-track"></div></label></div>
+                <div class="pl-row"><div class="pl-logo tk"><img src="iconos/tiktok.svg" alt="TikTok" /></div><div class="pl-info"><div class="pl-name">TikTok</div><div class="pl-st warn" id="st-tk">En espera de API / Cookies</div></div><label class="tog"><input type="checkbox" id="tog-tk" onchange="togPlat('TikTok',this)"><div class="tog-track"></div></label></div>
+                <div class="pl-row"><div class="pl-logo fb"><img src="iconos/facebook.svg" alt="Facebook" /></div><div class="pl-info"><div class="pl-name">Facebook (CDP)</div><div class="pl-st warn" id="st-fb">Verificando sesión...</div></div><label class="tog"><input type="checkbox" id="tog-fb" onchange="togPlat('Facebook',this)"><div class="tog-track"></div></label></div>
+                <div class="pl-row"><div class="pl-logo ig"><img src="iconos/instagram.svg" alt="Instagram" /></div><div class="pl-info"><div class="pl-name">Instagram</div><div class="pl-st warn" id="st-ig">En espera de API / Cookies</div></div><label class="tog"><input type="checkbox" id="tog-ig" onchange="togPlat('Instagram',this)"><div class="tog-track"></div></label></div>
+                <div class="pl-row pl-row-col">
+                  <div class="flex-between">
+                    <div class="flex-align-11">
+                      <div class="pl-logo tg tg-logo"><img src="iconos/telegram.svg" alt="Telegram" /></div>
+                      <div class="pl-info">
+                        <div class="pl-name">Telegram (MTProto HD)</div>
+                        <div class="pl-st warn" id="st-tg">Verificando sesión...</div>
+                        <div class="pl-st ok" id="ck-tg" style="font-size:10px;margin-top:2px">Canal: <span id="lbl-canal-tg" class="lbl-tg">Sin canal configurado</span></div>
+                      </div>
+                    </div>
+                    <label class="tog"><input type="checkbox" checked id="tog-tg" onchange="togPlat('Telegram',this)"><div class="tog-track"></div></label>
+                  </div>
+                  <div style="margin-top:6px;display:flex;flex-direction:column;gap:6px">
+                    <div style="display:flex;gap:6px;align-items:center">
+                      <select id="select-canal-tg" class="fsel" style="flex:1" onchange="seleccionarCanalDashboard(this.value)">
+                        <option value="">-- Canales guardados --</option>
+                      </select>
+                    </div>
+                    <div class="flex-gap-6-m2">
+                      <input type="text" id="input-canal-tg" class="fi input-tg" placeholder="Escribir nuevo canal (ej: @canal)" value="" />
+                      <button class="btn bp bsm btn-telegram" onclick="guardarCanalTelegram()"><img src="iconos/guardar.svg" class="icono-svg-sm" /> Guardar</button>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+              <div class="flex-col-gap-6-m10">
+                <button class="btn bp bsm bfw" style="background:linear-gradient(135deg, #1877f2, #0d65d9);color:#fff;border:none" onclick="abrirModalFacebook()"><img src="iconos/facebook.svg" class="icono-svg-sm" /> Iniciar / Gestionar Sesión Facebook</button>
+                <button class="btn bp bsm bfw btn-telegram" onclick="iniciarSesionTelegramMTProto()"><img src="iconos/telegram.svg" class="icono-svg-sm" /> Configurar / Vincular Sesión Telegram MTProto</button>
+                <button class="btn bs bsm bfw" onclick="abrirConfig()"><img src="iconos/config.svg" class="icono-svg-sm" /> Gestionar Cookies JSON / Config</button>
+              </div>
+            </div>
+
+            <!-- Cola de Videos Real -->
+            <div class="card">
+              <div class="ctitle"><span class="cico cico-amber"><img src="iconos/videos.svg" class="icono-svg-sm" /></span>Cola de Videos en Disco</div>
+              <div class="ql" id="cola-list">
+                <div class="td-empty">Cargando cola de videos reales...</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div><!-- /pg-dash -->
+
